@@ -100,6 +100,8 @@ class QIFI_Account():
 
         self.banks = {}
 
+        self.frozen = {}
+
         self.events = {}
         self.positions = {}
         self.trades = {}
@@ -252,7 +254,7 @@ class QIFI_Account():
             "frozen_commission": 0.0,
             "frozen_premium": 0.0,
             "available": self.available,
-            "risk_ratio": 0.0
+            "risk_ratio": 1- self.available/self.balance
         }
 
     @property
@@ -342,16 +344,19 @@ class QIFI_Account():
             """
             冻结的保证金
             """
-            moneyneed = float(amount) * float(price) * float(
+            coeff = float(price) * float(
                 self.market_preset.get_code(code).get("unit_table",
                                                       1)
             ) * float(self.market_preset.get_code(code).get("buy_frozen_coeff",
                                                             1))
-
+            moneyneed = coeff * amount
             if self.available > moneyneed:
                 self.money -= moneyneed
-                # self.frozen
-                # [order_id] = moneyneed
+                self.frozen[order_id] = {
+                    'amount': amount,
+                    'coeff': coeff,
+                    'money': moneyneed
+                }
                 res = True
             else:
                 self.log("开仓保证金不足 TOWARDS{} Need{} HAVE{}".format(
@@ -395,6 +400,29 @@ class QIFI_Account():
             print(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
 
+    def cancel_order(self, order_id):
+        """Initial
+        撤单/ 释放冻结/
+        
+        """
+        od = self.orders[order_id]
+        od['last_msg'] = '已撤单'
+        od['status'] = 500
+        od['volume_left'] = 0
+        frozen = self.frozen[order_id]
+
+        self.money += frozen['money']
+
+        frozen['amount'] = 0
+        frozen['money'] = 0
+
+
+        self.orders[order_id] = od
+        self.frozen[order_id] = frozen
+
+        self.log('撤单成功 {}'.format(order_id))       
+
+
     def make_deal(self, order: dict):
 
         self.receive_deal(order["instrument_id"], trade_price=order["limit_price"], trade_time=self.dtstr,
@@ -415,20 +443,27 @@ class QIFI_Account():
 
             # update order
             od = self.orders[order_id]
+            frozen = self.frozen[order_id]
             vl = od.get('volume_left', 0)
             if trade_amount == vl:
+                frozen['amount'] = 0
+                frozen['money'] = 0
                 od['last_msg'] = '全部成交'
                 od["status"] = 300
                 self.log('全部成交 {}'.format(order_id))
 
             elif trade_amount < vl:
+                frozen['amount'] = vl - trade_amount
+                frozen['money'] = frozen['amount'] * frozen['coeff']
+                
                 od['last_msg'] = '部分成交'
                 od["status"] = 200
                 self.log('部分成交 {}'.format(order_id))
+            
             od['volume_left'] -= trade_amount
 
             self.orders[order_id] = od
-
+            self.frozen[order_id] = frozen
             # update trade
             self.event_id += 1
             trade_id = str(uuid.uuid4()) if trade_id is None else trade_id
