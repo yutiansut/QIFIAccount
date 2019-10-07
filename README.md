@@ -7,6 +7,11 @@ _QIFIAccount兼容 [QIFI协议标准](https://github.com/QUANTAXIS/QIFI/blob/mas
 pip install qifiaccount
 ```
 
+
+### 用法:
+
+参见 http://localhost:8889/notebooks/QIFIAccount/QIFI_QAPOS.ipynb#
+
 ```python
 
 from qifiaccount import QIFI_Account
