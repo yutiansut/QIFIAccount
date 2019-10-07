@@ -2,6 +2,7 @@ import datetime
 import uuid
 from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
 from QUANTAXIS.QAMarket.QAPosition import QA_Position
+import pymongo
 
 
 class ORDER_DIRECTION():
@@ -48,7 +49,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QUANTAXIS"):
+    def __init__(self, username, password, model="SIM", broker_name="QUANTAXIS", trade_host='127.0.0.1'):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -60,9 +61,9 @@ class QIFI_Account():
 
 
         """
-        self.user_id = ""
-        self.username = ""
-        self.password = ""
+        self.user_id = username
+        self.username = username
+        self.password = password
 
         self.source_id = "QIFI_Account"  # 识别号
         self.market_preset = MARKET_PRESET()
@@ -78,6 +79,9 @@ class QIFI_Account():
 
         self.bank_id = "QASIM"
         self.bankname = "QASIMBank"
+
+        self.trade_host = trade_host
+        self.db = pymongo.MongoClient(trade_host).QAREALTIME.account
 
         self.pub_host = ""
         self.trade_host = ""
@@ -119,10 +123,14 @@ class QIFI_Account():
         self.sync()
 
     def reload(self):
-        pass
+        message = self.db.find_one(
+            {'account_cookie': self.user_id, 'password': self.password})
+
+        
 
     def sync(self):
-        pass
+        self.db.update({'account_cookie': self.user_id, 'password': self.password}, {
+                       '$set': self.message}, upsert=True)
 
     @property
     def dtstr(self):
