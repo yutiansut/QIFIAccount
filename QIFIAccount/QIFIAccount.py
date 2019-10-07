@@ -395,6 +395,12 @@ class QIFI_Account():
             print(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
 
+    def make_deal(self, order: dict):
+
+        self.receive_deal(order["instrument_id"], trade_price=order["limit_price"], trade_time=self.dtstr,
+                          trade_amount=order["volume_left"], trade_towards=order["towards"],
+                          order_id=order['order_id'], trade_id=str(uuid.uuid4()))
+
     def receive_deal(self,
                      code,
                      trade_price,
@@ -438,14 +444,12 @@ class QIFI_Account():
                 "offset": od['offset'],
                 "volume": trade_amount,
                 "price": trade_price,
-                "trade_date_time": self.dtstr}
+                "trade_date_time": trade_time}
 
             # update accounts
 
             self.get_position(code).update_pos(
                 trade_price, trade_amount, trade_towards)
-
-
 
     def get_position(self, code=None):
         if code is None:
