@@ -276,11 +276,11 @@ class QIFI_Account():
     def margin(self):
         """保证金
         """
-        pass
+        return sum([position.margin for position in self.positions.values()])
 
     @property
     def commission(self):
-        pass
+        return sum([position.commission for position in self.positions.values()])
 
     @property
     def premium(self):
@@ -465,7 +465,7 @@ if __name__ == "__main__":
     import pprint
     pprint.pprint(acc.message)
 
-    r = acc.send_order('RB2001', 10, 5000, 1)
+    r = acc.send_order('RB2001', 10, 5000, ORDER_DIRECTION.BUY_OPEN)
     print(r)
 
     acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
