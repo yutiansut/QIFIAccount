@@ -86,7 +86,7 @@ class QIFI_Account():
         self.trading_day = ""
 
         self.pre_balance = 0
-        self._balance = 0
+
         self.static_balance = 0
 
         self.deposit = 0  # 入金
@@ -113,7 +113,7 @@ class QIFI_Account():
         except:
             pass
 
-        if self.pre_balance == 0 and self._balance == 0 and self.model == "SIM":
+        if self.pre_balance == 0 and self.balance == 0 and self.model == "SIM":
             self.create_simaccount()
 
         self.sync()
@@ -250,11 +250,11 @@ class QIFI_Account():
             "float_profit": self.float_profit,
             "balance": self.balance,
             "margin": self.margin,
-            "frozen_margin": 0.0,
+            "frozen_margin": self.frozen_margin,
             "frozen_commission": 0.0,
             "frozen_premium": 0.0,
             "available": self.available,
-            "risk_ratio": 1- self.available/self.balance
+            "risk_ratio": 1 - self.available/self.balance
         }
 
     @property
@@ -263,12 +263,15 @@ class QIFI_Account():
 
     @property
     def position_profit(self):
-        pass
+        return sum([position.position_profit for position in self.positions.values()])
 
     @property
     def float_profit(self):
-        pass
+        return sum([position.float_profit for position in self.positions.values()])
 
+    @property
+    def frozen_margin(self):
+        return sum([item.get('money') for item in self.frozen.values()])
 # 惰性计算
     @property
     def available(self):
@@ -296,7 +299,7 @@ class QIFI_Account():
             self {[type]} -- [description]
         """
 
-        return self._balance
+        return self.static_balance + self.deposit - self.withdraw + self.float_profit + self.close_profit
 
     def order_check(self, code: str, amount: float, price: float, towards: int, order_id: str) -> bool:
         res = False
@@ -403,7 +406,7 @@ class QIFI_Account():
     def cancel_order(self, order_id):
         """Initial
         撤单/ 释放冻结/
-        
+
         """
         od = self.orders[order_id]
         od['last_msg'] = '已撤单'
@@ -416,12 +419,10 @@ class QIFI_Account():
         frozen['amount'] = 0
         frozen['money'] = 0
 
-
         self.orders[order_id] = od
         self.frozen[order_id] = frozen
 
-        self.log('撤单成功 {}'.format(order_id))       
-
+        self.log('撤单成功 {}'.format(order_id))
 
     def make_deal(self, order: dict):
 
@@ -446,6 +447,8 @@ class QIFI_Account():
             frozen = self.frozen[order_id]
             vl = od.get('volume_left', 0)
             if trade_amount == vl:
+
+                self.money += frozen['money']
                 frozen['amount'] = 0
                 frozen['money'] = 0
                 od['last_msg'] = '全部成交'
@@ -454,12 +457,15 @@ class QIFI_Account():
 
             elif trade_amount < vl:
                 frozen['amount'] = vl - trade_amount
-                frozen['money'] = frozen['amount'] * frozen['coeff']
-                
+                release_money = trade_amount * frozen['coeff']
+                self.money += release_money
+
+                frozen['money'] -= release_money
+
                 od['last_msg'] = '部分成交'
                 od["status"] = 200
                 self.log('部分成交 {}'.format(order_id))
-            
+
             od['volume_left'] -= trade_amount
 
             self.orders[order_id] = od
@@ -483,8 +489,11 @@ class QIFI_Account():
 
             # update accounts
 
-            self.get_position(code).update_pos(
+            margin, close_profit = self.get_position(code).update_pos(
                 trade_price, trade_amount, trade_towards)
+
+            self.money -= margin
+            self.close_profit += close_profit
 
     def get_position(self, code=None):
         if code is None:
