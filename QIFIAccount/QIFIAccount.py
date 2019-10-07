@@ -30,6 +30,22 @@ class ORDER_DIRECTION():
     OTHER = 6
 
 
+def parse_orderdirection(od):
+    direction = ''
+    offset = ''
+
+    if od in [1, 2, 3]:
+        direction = 'BUY'
+    elif od in [-1, -2, -3]:
+        direction = 'SELL'
+    if abs(od) == 2:
+        offset = 'OPEN'
+    elif abs(od) == 3:
+        offset = 'CLOSE'
+
+    return direction, offset
+
+
 class QIFI_Account():
 
     def __init__(self, username, password, model="SIM", broker_name="QUANTAXIS"):
@@ -178,6 +194,9 @@ class QIFI_Account():
     def drop_position(self, position):
         pass
 
+    def log(self, message):
+        self.events[self.dtstr] = message
+
     @property
     def message(self):
         return {
@@ -203,9 +222,9 @@ class QIFI_Account():
             "trading_day": self.trading_day,
             "status": self.status,
             "accounts": self.account_msg,
-            "trades": self.trade_msg,
+            "trades": self.trades,
             "positions": self.position_msg,
-            "orders": self.order_msg,
+            "orders": self.orders,
             "events": self.events,
             "transfers": self.transfers,
             "banks": self.banks,
@@ -237,28 +256,6 @@ class QIFI_Account():
         }
 
     @property
-    def order_msg(self):
-        """struct to json
-
-        Returns:
-            [type] -- [description]
-        """
-
-        return dict(zip(self.orders.keys(), [item.to_dict() for item in self.orders]))
-
-    @property
-    def trade_msg(self):
-        """struct to json
-
-        Returns:
-            [type] -- [description]
-        """
-
-        return {
-
-        }
-
-    @property
     def position_msg(self):
         return {
 
@@ -275,7 +272,7 @@ class QIFI_Account():
 # 惰性计算
     @property
     def available(self):
-        return 0
+        return self.money
 
     @property
     def margin(self):
@@ -307,7 +304,7 @@ class QIFI_Account():
 
         if towards == ORDER_DIRECTION.BUY_CLOSE:
             # print("buyclose")
-            #print(self.volume_short - self.volume_short_frozen)
+            # print(self.volume_short - self.volume_short_frozen)
             # print(amount)
             if (qapos.volume_short - qapos.volume_short_frozen) >= amount:
                 # check
@@ -324,7 +321,7 @@ class QIFI_Account():
                 print("BUYCLOSETODAY 今日仓位不足")
         elif towards == ORDER_DIRECTION.SELL_CLOSE:
             # print("sellclose")
-            #print(self.volume_long - self.volume_long_frozen)
+            # print(self.volume_long - self.volume_long_frozen)
             # print(amount)
             if (qapos.volume_long - qapos.volume_long_frozen) >= amount:
                 qapos.volume_long_frozen_today += amount
@@ -335,7 +332,7 @@ class QIFI_Account():
         elif towards == ORDER_DIRECTION.SELL_CLOSETODAY:
             if (qapos.volume_long_today - qapos.volume_short_frozen_today) >= amount:
                 # print("sellclosetoday")
-                #print(self.volume_long_today - self.volume_long_frozen)
+                # print(self.volume_long_today - self.volume_long_frozen)
                 # print(amount)
                 qapos.volume_long_frozen_today += amount
                 return True
@@ -349,17 +346,17 @@ class QIFI_Account():
             """
             moneyneed = float(amount) * float(price) * float(
                 self.market_preset.get_code(code).get("unit_table",
-                                       1)
+                                                      1)
             ) * float(self.market_preset.get_code(code).get("buy_frozen_coeff",
-                                             1))
+                                                            1))
 
             if self.available > moneyneed:
-                self.available -= moneyneed
-                #self.frozen
-                #[order_id] = moneyneed
+                self.money -= moneyneed
+                # self.frozen
+                # [order_id] = moneyneed
                 res = True
             else:
-                print("开仓保证金不足 TOWARDS{} Need{} HAVE{}".format(
+                self.log("开仓保证金不足 TOWARDS{} Need{} HAVE{}".format(
                     towards, moneyneed, self.available))
 
         return res
@@ -367,9 +364,12 @@ class QIFI_Account():
     def send_order(self, code: str, amount: float, price: float, towards: int):
         order_id = str(uuid.uuid4())
         if self.order_check(code, amount, price, towards, order_id):
-            #print("order check success")
+            # print("order check success")
+            direction, offset = parse_orderdirection(towards)
+            self.event_id += 1
             order = {
                 "account_cookie": self.user_id,
+                "user_id": self.user_id,
                 "instrument_id": code,
                 "towards": int(towards),
                 "exchange_id": self.market_preset.get_exchange(code),
@@ -377,7 +377,19 @@ class QIFI_Account():
                 "volume": float(amount),
                 "price": float(price),
                 "order_id": order_id,
-                "status": 100
+                "seqno": self.event_id,
+                "direction": direction,
+                "offset": offset,
+                "volume_orign": float(amount),
+                "price_type": "LIMIT",
+                "limit_price": float(price),
+                "time_condition": "GFD",
+                "volume_condition": "ANY",
+                "insert_date_time": self.dtstr,
+                "exchange_order_id": str(uuid.uuid4()),
+                "status": 100,
+                "volume_left": float(amount),
+                "last_msg": "已报"
             }
             self.orders[order_id] = order
             return order
@@ -385,8 +397,53 @@ class QIFI_Account():
             print(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
 
-    def receive_deal(self, ):
-        pass
+    def receive_deal(self,
+                     code,
+                     trade_price,
+                     trade_amount,
+                     trade_towards,
+                     trade_time,
+                     message=None,
+                     order_id=None,
+                     trade_id=None,
+                     realorder_id=None):
+        if order_id in self.orders.keys():
+
+            ### update order
+            od = self.orders[order_id]
+            vl = od.get('volume_left', 0)
+            if trade_amount == vl:
+                od['last_msg'] = '全部成交'
+                od["status"] = 300
+                self.log('全部成交 {}'.format(order_id))
+
+            elif trade_amount < vl:
+                od['last_msg'] = '部分成交'
+                od["status"] = 200
+                self.log('部分成交 {}'.format(order_id))
+            od['volume_left'] -= trade_amount
+
+            self.orders[order_id] = od
+
+            ### update trade
+            self.event_id += 1
+            trade_id = str(uuid.uuid4()) if trade_id is None else trade_id
+            self.trades[trade_id] = {
+                "seqno": self.event_id,
+                "user_id":  self.user_id,
+                "trade_id": trade_id,
+                "exchange_id": od['exchange_id'],
+                "instrument_id": od['instrument_id'],
+                "order_id": order_id,
+                "exchange_trade_id": trade_id,
+                "direction": od['direction'],
+                "offset": od['offset'],
+                "volume": trade_amount,
+                "price": trade_price,
+                "trade_date_time": self.dtstr}
+
+            ### update accounts
+
 
     def get_position(self, code=None):
         if code is None:
@@ -403,5 +460,12 @@ class QIFI_Account():
 if __name__ == "__main__":
     acc = QIFI_Account("x1", "x1")
     acc.initial()
+    import pprint
+    pprint.pprint(acc.message)
+
+    r = acc.send_order('RB2001', 10, 5000, 1)
+    print(r)
+
+    acc.receive_deal(r['instrument_id'], 4500,r['volume'],r['towards'], acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
     import pprint
     pprint.pprint(acc.message)
