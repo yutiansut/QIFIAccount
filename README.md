@@ -14,7 +14,7 @@ pip install qifiaccount
 
 ```python
 
-from qifiaccount import QIFI_Account
+from QIFIAccount import QIFI_Account, ORDER_DIRECTION
 acc = QIFI_Account("x1", "x1")
 acc.initial()
 
