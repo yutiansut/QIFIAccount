@@ -257,9 +257,7 @@ class QIFI_Account():
 
     @property
     def position_msg(self):
-        return {
-
-        }
+        return dict(zip(self.positions.keys(), [item.message for item in self.positions.values()]))
 
     @property
     def position_profit(self):
@@ -409,7 +407,7 @@ class QIFI_Account():
                      realorder_id=None):
         if order_id in self.orders.keys():
 
-            ### update order
+            # update order
             od = self.orders[order_id]
             vl = od.get('volume_left', 0)
             if trade_amount == vl:
@@ -425,7 +423,7 @@ class QIFI_Account():
 
             self.orders[order_id] = od
 
-            ### update trade
+            # update trade
             self.event_id += 1
             trade_id = str(uuid.uuid4()) if trade_id is None else trade_id
             self.trades[trade_id] = {
@@ -442,7 +440,11 @@ class QIFI_Account():
                 "price": trade_price,
                 "trade_date_time": self.dtstr}
 
-            ### update accounts
+            # update accounts
+
+            self.get_position(code).update_pos(
+                trade_price, trade_amount, trade_towards)
+
 
 
     def get_position(self, code=None):
@@ -466,6 +468,7 @@ if __name__ == "__main__":
     r = acc.send_order('RB2001', 10, 5000, 1)
     print(r)
 
-    acc.receive_deal(r['instrument_id'], 4500,r['volume'],r['towards'], acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
+    acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
+                     acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
     import pprint
     pprint.pprint(acc.message)
