@@ -126,8 +126,6 @@ class QIFI_Account():
         message = self.db.find_one(
             {'account_cookie': self.user_id, 'password': self.password})
 
-        
-
     def sync(self):
         self.db.update({'account_cookie': self.user_id, 'password': self.password}, {
                        '$set': self.message}, upsert=True)
