@@ -1,7 +1,7 @@
 import datetime
 import uuid
 from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
-from QUANTAXIS.QAMarket.QAPosition import QA_Position
+from QIFIAccount.QAPosition import QA_Position
 import pymongo
 
 
