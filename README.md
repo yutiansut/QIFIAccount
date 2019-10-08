@@ -30,5 +30,7 @@ acc.cancel_order
 
 acc.get_position
 
-
 ```
+
+
+QIFI_Account的最优实践是 QIFI_Strategy, 因为QIFI_Account已经将账户层完全实现, 并且支持多市场, 所以 QIFI_Strategy可以直接进行 订阅行情/ 重写on_bar/on_tick 的策略逻辑/ 以及进行仓位/风险管理
