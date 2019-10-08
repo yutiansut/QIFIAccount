@@ -49,7 +49,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QUANTAXIS", trade_host='127.0.0.1'):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host='127.0.0.1'):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -68,7 +68,7 @@ class QIFI_Account():
         self.source_id = "QIFI_Account"  # 识别号
         self.market_preset = MARKET_PRESET()
         # 指的是 Account所属的账户编组(实时的时候的账户观察组)
-        self.portfolio = ""
+        self.portfolio = "QAPaperTrade"
         self.model = model
 
         self.broker_name = broker_name    # 所属期货公司/ 模拟的组
@@ -81,7 +81,7 @@ class QIFI_Account():
         self.bankname = "QASIMBank"
 
         self.trade_host = trade_host
-        self.db = pymongo.MongoClient(trade_host).QAREALTIME.account
+        self.db = pymongo.MongoClient(trade_host).QAREALTIME
 
         self.pub_host = ""
         self.trade_host = ""
@@ -126,9 +126,79 @@ class QIFI_Account():
         message = self.db.find_one(
             {'account_cookie': self.user_id, 'password': self.password})
 
+        time = datetime.datetime.now()
+        # resume/settle
+
+        if time.hour() <= 15:
+            self.trading_day = time.date()
+        else:
+            if time.weekday() in [0, 1, 2, 3]:
+                self.trading_day = time.date() + datetime.timedelta(days=1)
+            elif time.weekday() in [4, 5, 6]:
+                self.trading_day = time.date() + datetime.timedelta(days=(7-time.weekday()))
+
+        accpart = message.get('accounts')
+
+        self.money = message.get('money')
+        self.source_id = message.get('sourceid')
+        
+        self.pre_balance = accpart.get('pre_balance')
+        self.deposit = accpart.get('deposit')
+        self.withdraw = accpart.get('withdraw')
+        self.withdrawQuota = accpart.get('WithdrawQuota')
+        self.close_profit = accpart.get('close_profit')
+        self.static_balance = accpart.get('static_balance')
+        self.premium = accpart.get('premium')
+        self.events = message.get('events')
+        self.trades = message.get('trades')
+        self.transfers = message.get('transfers')
+        self.orders = message.get('orders')
+        self.banks = message.get('banks')
+
+        self.status = message.get('status')
+        self.wsuri = message.get('wsuri')
+
+        positions = message.get('positions')
+        for position in positions.values():
+            self.positions[position.get('instrument_id')] = QA_Position().loadfrommessage(position)
+
+        if message.get('trading_day', '') == str(self.trading_day):
+            # reload
+            pass
+
+        else:
+            # settle
+            self.settle()
+
     def sync(self):
-        self.db.update({'account_cookie': self.user_id, 'password': self.password}, {
+        self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
                        '$set': self.message}, upsert=True)
+
+    def settle(self):
+        self.db.hisaccount.insert_one(self.message)
+        self.pre_balance += (self.deposit - self.withdraw + self.close_profit)
+        self.static_balance = self.pre_balance
+
+        self.close_profit = 0
+        self.deposit = 0  # 入金
+        self.withdraw = 0  # 出金
+        
+        self.money += self.frozen_margin
+        
+        self.orders= {}
+        self.frozen= {}
+        self.trades= {}
+        self.transfers = {}
+        self.events = {}
+        self.event_id = 0
+
+
+        for item in self.positions.values():
+            item.settle()
+
+
+        self.sync()
+
 
     @property
     def dtstr(self):
@@ -211,6 +281,7 @@ class QIFI_Account():
             # // 账户号(兼容QUANTAXIS QAAccount)// 实盘的时候是 账户id
             "account_cookie": self.user_id,
             "password": self.password,
+            "databaseip": self.trade_host,
             "model": self.model,
             "ping_gap": 5,
             "portfolio": self.portfolio,
@@ -229,6 +300,7 @@ class QIFI_Account():
             "bankname": self.bankname,
             "trading_day": self.trading_day,
             "status": self.status,
+
             "accounts": self.account_msg,
             "trades": self.trades,
             "positions": self.position_msg,
@@ -526,3 +598,21 @@ if __name__ == "__main__":
                      acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
     import pprint
     pprint.pprint(acc.message)
+
+    acc.sync()
+
+
+    acc2 = QIFI_Account("x1", "x1")
+    acc2.initial()
+    import pprint
+    pprint.pprint(acc2.message)
+
+    r = acc2.send_order('000001', 10, 12, ORDER_DIRECTION.BUY)
+    print(r)
+
+    acc2.receive_deal(r['instrument_id'], 11.8, r['volume'], r['towards'],
+                     acc2.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
+    import pprint
+    pprint.pprint(acc2.message)
+
+    acc2.sync()
