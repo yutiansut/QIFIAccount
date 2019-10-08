@@ -98,7 +98,7 @@ class QIFI_Account():
         self.withdrawQuota = 0  # 可取金额
         self.close_profit = 0
         self.event_id = 0
-
+        self.money = 0
         # QIFI 协议
         self.transfers = {}
 
@@ -112,24 +112,23 @@ class QIFI_Account():
         self.orders = {}
 
     def initial(self):
-        try:
-            self.reload()
-        except:
-            pass
+
+        self.reload()
 
         if self.pre_balance == 0 and self.balance == 0 and self.model == "SIM":
+            print('Create new Account')
             self.create_simaccount()
 
         self.sync()
 
     def reload(self):
-        message = self.db.find_one(
+        message = self.db.account.find_one(
             {'account_cookie': self.user_id, 'password': self.password})
 
         time = datetime.datetime.now()
         # resume/settle
 
-        if time.hour() <= 15:
+        if time.hour <= 15:
             self.trading_day = time.date()
         else:
             if time.weekday() in [0, 1, 2, 3]:
@@ -141,14 +140,13 @@ class QIFI_Account():
 
         self.money = message.get('money')
         self.source_id = message.get('sourceid')
-        
+
         self.pre_balance = accpart.get('pre_balance')
         self.deposit = accpart.get('deposit')
         self.withdraw = accpart.get('withdraw')
         self.withdrawQuota = accpart.get('WithdrawQuota')
         self.close_profit = accpart.get('close_profit')
         self.static_balance = accpart.get('static_balance')
-        self.premium = accpart.get('premium')
         self.events = message.get('events')
         self.trades = message.get('trades')
         self.transfers = message.get('transfers')
@@ -160,7 +158,8 @@ class QIFI_Account():
 
         positions = message.get('positions')
         for position in positions.values():
-            self.positions[position.get('instrument_id')] = QA_Position().loadfrommessage(position)
+            self.positions[position.get('instrument_id')] = QA_Position(
+            ).loadfrommessage(position)
 
         if message.get('trading_day', '') == str(self.trading_day):
             # reload
@@ -171,34 +170,35 @@ class QIFI_Account():
             self.settle()
 
     def sync(self):
+        print(self.message)
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
-                       '$set': self.message}, upsert=True)
+            '$set': self.message}, upsert=True)
+        self.db.hisaccount.insert_one(
+            {'updatetime': self.dtstr, 'account_cookie': self.user_id, 'accounts': self.account_msg})
 
     def settle(self):
-        self.db.hisaccount.insert_one(self.message)
+        print('settle')
+        self.db.history.insert_one(self.message)
         self.pre_balance += (self.deposit - self.withdraw + self.close_profit)
         self.static_balance = self.pre_balance
 
         self.close_profit = 0
         self.deposit = 0  # 入金
         self.withdraw = 0  # 出金
-        
+
         self.money += self.frozen_margin
-        
-        self.orders= {}
-        self.frozen= {}
-        self.trades= {}
+
+        self.orders = {}
+        self.frozen = {}
+        self.trades = {}
         self.transfers = {}
         self.events = {}
         self.event_id = 0
 
-
         for item in self.positions.values():
             item.settle()
 
-
         self.sync()
-
 
     @property
     def dtstr(self):
@@ -298,9 +298,8 @@ class QIFI_Account():
             "updatetime": str(self.last_updatetime),
             "wsuri": self.wsuri,
             "bankname": self.bankname,
-            "trading_day": self.trading_day,
+            "trading_day": str(self.trading_day),
             "status": self.status,
-
             "accounts": self.account_msg,
             "trades": self.trades,
             "positions": self.position_msg,
@@ -573,6 +572,8 @@ class QIFI_Account():
             self.money -= margin
             self.close_profit += close_profit
 
+            self.sync()
+
     def get_position(self, code=None):
         if code is None:
             return list(self.positions.values())[0]
@@ -601,7 +602,6 @@ if __name__ == "__main__":
 
     acc.sync()
 
-
     acc2 = QIFI_Account("x1", "x1")
     acc2.initial()
     import pprint
@@ -611,7 +611,7 @@ if __name__ == "__main__":
     print(r)
 
     acc2.receive_deal(r['instrument_id'], 11.8, r['volume'], r['towards'],
-                     acc2.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
+                      acc2.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
     import pprint
     pprint.pprint(acc2.message)
 
