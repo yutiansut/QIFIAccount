@@ -479,6 +479,7 @@ class QIFI_Account():
         else:
             print(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
+        self.sync()
 
     def cancel_order(self, order_id):
         """Initial
@@ -574,7 +575,7 @@ class QIFI_Account():
 
             self.sync()
 
-    def get_position(self, code=None):
+    def get_position(self, code: str = None) -> QA_Position:
         if code is None:
             return list(self.positions.values())[0]
         else:
@@ -584,6 +585,21 @@ class QIFI_Account():
 
     def query_trade(self):
         pass
+
+    def on_tick(self, tick):
+        pass
+
+    def on_bar(self, bar):
+        pass
+
+    def on_price_change(self, code, price):
+
+        pos = self.get_position(code)
+        if pos.last_price == price:
+            pass
+        else:
+            pos.last_price = price
+            self.sync()
 
 
 if __name__ == "__main__":
