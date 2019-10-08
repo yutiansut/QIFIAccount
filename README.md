@@ -10,7 +10,7 @@ pip install qifiaccount
 
 ### 用法:
 
-参见 http://localhost:8889/notebooks/QIFIAccount/QIFI_QAPOS.ipynb#
+参见 /usage 文件夹下的ipython notebook
 
 ```python
 
