@@ -135,39 +135,39 @@ class QIFI_Account():
                 self.trading_day = time.date() + datetime.timedelta(days=1)
             elif time.weekday() in [4, 5, 6]:
                 self.trading_day = time.date() + datetime.timedelta(days=(7-time.weekday()))
+        if message is not None:
+            accpart = message.get('accounts')
 
-        accpart = message.get('accounts')
+            self.money = message.get('money')
+            self.source_id = message.get('sourceid')
 
-        self.money = message.get('money')
-        self.source_id = message.get('sourceid')
+            self.pre_balance = accpart.get('pre_balance')
+            self.deposit = accpart.get('deposit')
+            self.withdraw = accpart.get('withdraw')
+            self.withdrawQuota = accpart.get('WithdrawQuota')
+            self.close_profit = accpart.get('close_profit')
+            self.static_balance = accpart.get('static_balance')
+            self.events = message.get('events')
+            self.trades = message.get('trades')
+            self.transfers = message.get('transfers')
+            self.orders = message.get('orders')
+            self.banks = message.get('banks')
 
-        self.pre_balance = accpart.get('pre_balance')
-        self.deposit = accpart.get('deposit')
-        self.withdraw = accpart.get('withdraw')
-        self.withdrawQuota = accpart.get('WithdrawQuota')
-        self.close_profit = accpart.get('close_profit')
-        self.static_balance = accpart.get('static_balance')
-        self.events = message.get('events')
-        self.trades = message.get('trades')
-        self.transfers = message.get('transfers')
-        self.orders = message.get('orders')
-        self.banks = message.get('banks')
+            self.status = message.get('status')
+            self.wsuri = message.get('wsuri')
 
-        self.status = message.get('status')
-        self.wsuri = message.get('wsuri')
+            positions = message.get('positions')
+            for position in positions.values():
+                self.positions[position.get('instrument_id')] = QA_Position(
+                ).loadfrommessage(position)
 
-        positions = message.get('positions')
-        for position in positions.values():
-            self.positions[position.get('instrument_id')] = QA_Position(
-            ).loadfrommessage(position)
+            if message.get('trading_day', '') == str(self.trading_day):
+                # reload
+                pass
 
-        if message.get('trading_day', '') == str(self.trading_day):
-            # reload
-            pass
-
-        else:
-            # settle
-            self.settle()
+            else:
+                # settle
+                self.settle()
 
     def sync(self):
         print(self.message)
