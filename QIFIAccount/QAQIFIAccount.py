@@ -594,12 +594,15 @@ class QIFI_Account():
 
     def on_price_change(self, code, price):
 
-        pos = self.get_position(code)
-        if pos.last_price == price:
-            pass
-        else:
-            pos.last_price = price
-            self.sync()
+        try:
+            pos = self.get_position(code)
+            if pos.last_price == price:
+                pass
+            else:
+                pos.last_price = price
+                self.sync()
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":
