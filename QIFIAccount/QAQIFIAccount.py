@@ -444,8 +444,8 @@ class QIFI_Account():
 
         return res
 
-    def send_order(self, code: str, amount: float, price: float, towards: int):
-        order_id = str(uuid.uuid4())
+    def send_order(self, code: str, amount: float, price: float, towards: int, order_id: str = ''):
+        order_id = str(uuid.uuid4()) if order_id == '' else order_id
         if self.order_check(code, amount, price, towards, order_id):
             # print("order check success")
             direction, offset = parse_orderdirection(towards)
