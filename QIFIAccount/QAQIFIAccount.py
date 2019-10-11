@@ -158,6 +158,7 @@ class QIFI_Account():
                 ).loadfrommessage(position)
 
             for order in self.open_orders:
+                self.log('try to deal {}'.format(order))
                 self.make_deal(order)
 
             self.banks = message.get('banks')
@@ -281,6 +282,7 @@ class QIFI_Account():
         pass
 
     def log(self, message):
+        print(message)
         self.events[self.dtstr] = message
 
 

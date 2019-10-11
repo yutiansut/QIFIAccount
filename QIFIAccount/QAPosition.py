@@ -718,6 +718,8 @@ class QA_Position():
             'volume_short': self.volume_short - self.volume_short_frozen
         }
 
+
+
     def change_moneypreset(self, money):
         self.moneypreset = money
 
