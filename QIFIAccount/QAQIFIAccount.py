@@ -629,30 +629,30 @@ class QIFI_Account():
 if __name__ == "__main__":
     acc = QIFI_Account("x1", "x1")
     acc.initial()
-    import pself.log
-    pself.log.pself.log(acc.message)
+
+    self.log.self.log(acc.message)
 
     r = acc.send_order('RB2001', 10, 5000, ORDER_DIRECTION.BUY_OPEN)
     self.log(r)
 
     acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
                      acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
-    import pself.log
-    pself.log.pself.log(acc.message)
+
+    self.log.self.log(acc.message)
 
     acc.sync()
 
     acc2 = QIFI_Account("x1", "x1")
     acc2.initial()
-    import pself.log
-    pself.log.pself.log(acc2.message)
+
+    self.log.self.log(acc2.message)
 
     r = acc2.send_order('000001', 10, 12, ORDER_DIRECTION.BUY)
     self.log(r)
 
     acc2.receive_deal(r['instrument_id'], 11.8, r['volume'], r['towards'],
                       acc2.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
-    import pself.log
-    pself.log.pself.log(acc2.message)
+
+    self.log.self.log(acc2.message)
 
     acc2.sync()
