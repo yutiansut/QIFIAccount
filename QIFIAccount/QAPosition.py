@@ -259,11 +259,10 @@ class QA_Position():
 
     @property
     def volume_long(self):
-        return self.volume_long_today + self.volume_long_his
-
+        return self.volume_long_today + self.volume_long_his + self.volume_long_frozen
     @property
     def volume_short(self):
-        return self.volume_short_his + self.volume_short_today
+        return self.volume_short_his + self.volume_short_today+ self.volume_short_frozen
 
     @property
     def volume_long_frozen(self):
@@ -667,6 +666,7 @@ class QA_Position():
             self.moneypresetLeft += (-marginValue + profit)
         elif towards == ORDER_DIRECTION.SELL_CLOSE:
             # 有昨仓先平昨仓
+            print(self.curpos)
             self.position_cost_long = self.position_cost_long * \
                 (self.volume_long - amount)/self.volume_long
             self.open_cost_long = self.open_cost_long * \
