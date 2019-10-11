@@ -475,11 +475,12 @@ class QIFI_Account():
                 "last_msg": "已报"
             }
             self.orders[order_id] = order
+            self.sync()
             return order
         else:
             print(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
-        self.sync()
+        
 
     def cancel_order(self, order_id):
         """Initial
