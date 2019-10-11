@@ -170,7 +170,7 @@ class QIFI_Account():
                 self.settle()
 
     def sync(self):
-        print(self.message)
+        #print(self.message)
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
             '$set': self.message}, upsert=True)
         self.db.hisaccount.insert_one(
