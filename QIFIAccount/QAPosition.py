@@ -619,6 +619,8 @@ class QA_Position():
                 # close_profit = (self.position_price_short - price) * volume * position->ins->volume_multiple;
                 marginValue = -(self.position_price_short * amount*self.market_preset.get('unit_table') *\
                     self.market_preset['sell_frozen_coeff'])
+
+                self.margin_short += marginValue     
                 profit = (self.position_price_short - price
                           ) * amount * self.market_preset.get('unit_table')
 
@@ -641,6 +643,7 @@ class QA_Position():
 
                 marginValue = -1*(self.position_price_long * amount*self.market_preset.get('unit_table') *\
                     self.market_preset['buy_frozen_coeff'])
+                self.margin_long += marginValue     
                 profit = (price - self.position_price_long) * \
                     amount * self.market_preset.get('unit_table')
                 self.moneypresetLeft += (-marginValue + profit)
@@ -662,6 +665,7 @@ class QA_Position():
                 self.market_preset['sell_frozen_coeff'])
             profit = (self.position_price_short - price
                       ) * amount * self.market_preset.get('unit_table')
+            self.margin_short += marginValue          
 
             self.moneypresetLeft += (-marginValue + profit)
         elif towards == ORDER_DIRECTION.SELL_CLOSE:
@@ -681,6 +685,7 @@ class QA_Position():
                 self.market_preset['buy_frozen_coeff'])
             profit = (price - self.position_price_long) * \
                 amount * self.market_preset.get('unit_table')
+            self.margin_long += marginValue     
             self.moneypresetLeft += (-marginValue + profit)
         # 计算收益/成本
 
