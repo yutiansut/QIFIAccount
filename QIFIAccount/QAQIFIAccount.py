@@ -323,6 +323,7 @@ class QIFI_Account():
             "events": self.events,
             "transfers": self.transfers,
             "banks": self.banks,
+            "frozen": self.frozen,
             "settlement": {},
         }
 
