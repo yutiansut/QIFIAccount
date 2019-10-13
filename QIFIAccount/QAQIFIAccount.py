@@ -166,7 +166,6 @@ class QIFI_Account():
             self.status = message.get('status')
             self.wsuri = message.get('wsuri')
 
-
             if message.get('trading_day', '') == str(self.trading_day):
                 # reload
                 pass
@@ -176,7 +175,7 @@ class QIFI_Account():
                 self.settle()
 
     def sync(self):
-        #self.log(self.message)
+        # self.log(self.message)
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
             '$set': self.message}, upsert=True)
         self.db.hisaccount.insert_one(
@@ -267,9 +266,6 @@ class QIFI_Account():
         }
         self.ask_deposit(1000000)
 
-
-
-
     def add_position(self, position):
 
         if position.instrument_id not in self.positions.keys():
@@ -285,11 +281,9 @@ class QIFI_Account():
         print(message)
         self.events[self.dtstr] = message
 
-
     @property
     def open_orders(self):
-        return [item for item in self.orders.values() if item['volume_left']>0]
-
+        return [item for item in self.orders.values() if item['volume_left'] > 0]
 
     @property
     def message(self):
@@ -366,6 +360,16 @@ class QIFI_Account():
     @property
     def frozen_margin(self):
         return sum([item.get('money') for item in self.frozen.values()])
+
+    def transform_dt(self, times):
+        if isinstance(times, str):
+            tradedt = datetime.datetime.strptime(times, '%Y-%m-%d ^ %H:%M:%S') if len(
+                times) == 19 else datetime.datetime.strptime(times, '%Y-%m-%d %H:%M:%S.%f')
+            return tradedt.timestamp()*1000000000
+        elif isinstance(times, datetime.datetime):
+            return tradedt.timestamp()*1000000000
+
+
 # 惰性计算
     @property
     def available(self):
@@ -398,7 +402,6 @@ class QIFI_Account():
     def order_check(self, code: str, amount: float, price: float, towards: int, order_id: str) -> bool:
         res = False
         qapos = self.get_position(code)
-
 
         self.log(qapos.curpos)
         self.log(qapos.close_available)
@@ -492,7 +495,8 @@ class QIFI_Account():
                 "limit_price": float(price),
                 "time_condition": "GFD",
                 "volume_condition": "ANY",
-                "insert_date_time": self.dtstr,
+                "insert_date_time": self.transform_dt(self.dtstr),
+                'order_time': self.dtstr,
                 "exchange_order_id": str(uuid.uuid4()),
                 "status": 100,
                 "volume_left": float(amount),
@@ -505,7 +509,6 @@ class QIFI_Account():
         else:
             self.log(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
-        
 
     def cancel_order(self, order_id):
         """Initial
@@ -517,10 +520,9 @@ class QIFI_Account():
         od['status'] = 500
         od['volume_left'] = 0
 
-
         if od['offset'] in ['CLOSE', 'CLOSETODAY']:
             pos = self.positions[od['instrument_id']]
-            if od['direction'] == 'BUY': 
+            if od['direction'] == 'BUY':
                 pos.volume_short_frozen_today += od['volume_left']
             else:
                 pos.volume_long_frozen_today += od['volume_left']
@@ -532,7 +534,7 @@ class QIFI_Account():
             self.frozen[order_id] = frozen
 
         self.orders[order_id] = od
-        
+
         self.log('撤单成功 {}'.format(order_id))
 
     def make_deal(self, order: dict):
@@ -555,7 +557,8 @@ class QIFI_Account():
 
             # update order
             od = self.orders[order_id]
-            frozen = self.frozen.get(order_id, {'order_id': order_id, 'money': 0, 'price': 0})
+            frozen = self.frozen.get(
+                order_id, {'order_id': order_id, 'money': 0, 'price': 0})
             vl = od.get('volume_left', 0)
             if trade_amount == vl:
 
@@ -584,6 +587,7 @@ class QIFI_Account():
             # update trade
             self.event_id += 1
             trade_id = str(uuid.uuid4()) if trade_id is None else trade_id
+
             self.trades[trade_id] = {
                 "seqno": self.event_id,
                 "user_id":  self.user_id,
@@ -596,7 +600,8 @@ class QIFI_Account():
                 "offset": od['offset'],
                 "volume": trade_amount,
                 "price": trade_price,
-                "trade_date_time": trade_time}
+                "trade_time": trade_time,
+                "trade_date_time": self.transform_dt(trade_time)}
 
             # update accounts
 
