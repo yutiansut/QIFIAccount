@@ -516,16 +516,23 @@ class QIFI_Account():
         od['last_msg'] = '已撤单'
         od['status'] = 500
         od['volume_left'] = 0
-        frozen = self.frozen[order_id]
 
-        self.money += frozen['money']
 
-        frozen['amount'] = 0
-        frozen['money'] = 0
+        if od['offset'] in ['CLOSE', 'CLOSETODAY']:
+            pos = self.positions[od['instrument_id']]
+            if od['direction'] == 'BUY': 
+                pos.volume_short_frozen_today += od['volume_left']
+            else:
+                pos.volume_long_frozen_today += od['volume_left']
+        else:
+            frozen = self.frozen[order_id]
+            self.money += frozen['money']
+            frozen['amount'] = 0
+            frozen['money'] = 0
+            self.frozen[order_id] = frozen
 
         self.orders[order_id] = od
-        self.frozen[order_id] = frozen
-
+        
         self.log('撤单成功 {}'.format(order_id))
 
     def make_deal(self, order: dict):
