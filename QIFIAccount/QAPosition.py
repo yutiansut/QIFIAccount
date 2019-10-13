@@ -810,8 +810,11 @@ class QA_Position():
             orders=message['orders'],
             #commission=message['commission'],
             name=message['name'])
-
-        self.last_price =( self.open_price_long*self.volume_long + self.open_price_short*self.volume_short)/(self.volume_long+ self.volume_short)
+        if self.volume_long+ self.volume_short >0:
+            self.last_price =( self.open_price_long*self.volume_long + self.open_price_short*self.volume_short)/(self.volume_long+ self.volume_short)
+        else:
+            self.last_price = 0
+        
         return self
 
     def on_order(self, order: QA_Order):

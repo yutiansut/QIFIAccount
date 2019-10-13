@@ -441,7 +441,7 @@ class QIFI_Account():
                 # self.log(self.volume_long_today - self.volume_long_frozen)
                 # self.log(amount)
                 qapos.volume_long_frozen_today += amount
-                qspos.volume_long_today -= amount
+                qapos.volume_long_today -= amount
                 return True
             else:
                 self.log("SELLCLOSETODAY 今日仓位不足")
