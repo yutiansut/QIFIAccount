@@ -614,7 +614,7 @@ class QA_Position():
                     (self.volume_short-amount)/self.volume_short
                 self.open_cost_short = self.open_cost_short * \
                     (self.volume_short-amount)/self.volume_short
-                self.volume_short_today -= amount
+                #self.volume_short_today -= amount
                 self.volume_short_frozen_today += amount
                 # close_profit = (self.position_price_short - price) * volume * position->ins->volume_multiple;
                 marginValue = -(self.position_price_short * amount*self.market_preset.get('unit_table') *\
@@ -624,7 +624,6 @@ class QA_Position():
                 profit = (self.position_price_short - price
                           ) * amount * self.market_preset.get('unit_table')
 
-                
                 self.moneypresetLeft += (-marginValue + profit)
 
                 # 释放保证金
@@ -638,7 +637,7 @@ class QA_Position():
                     (self.volume_long - amount)/self.volume_long
                 self.open_cost_long = self.open_cost_long * \
                     (self.volume_long-amount)/self.volume_long
-                self.volume_long_today -= amount
+                #self.volume_long_today -= amount
                 self.volume_long_frozen_today += amount
 
                 marginValue = -1*(self.position_price_long * amount*self.market_preset.get('unit_table') *\
@@ -654,11 +653,11 @@ class QA_Position():
                 (self.volume_short-amount)/self.volume_short
             self.open_cost_short = self.open_cost_short * \
                 (self.volume_short-amount)/self.volume_short
-            if self.volume_short_his >= amount:
-                self.volume_short_his -= amount
-            else:
-                self.volume_short_today -= (amount - self.volume_short_his)
-                self.volume_short_his = 0
+            # if self.volume_short_his >= amount:
+            #     self.volume_short_his -= amount
+            # else:
+            #     self.volume_short_today -= (amount - self.volume_short_his)
+            #     self.volume_short_his = 0
             self.volume_short_frozen_today -= amount
 
             marginValue = -1*(self.position_price_short * amount*self.market_preset.get('unit_table') *\
@@ -675,11 +674,11 @@ class QA_Position():
                 (self.volume_long - amount)/self.volume_long
             self.open_cost_long = self.open_cost_long * \
                 (self.volume_long-amount)/self.volume_long
-            if self.volume_long_his >= amount:
-                self.volume_long_his -= amount
-            else:
-                self.volume_long_today -= (amount - self.volume_long_his)
-                self.volume_long_his = 0
+            # if self.volume_long_his >= amount:
+            #     self.volume_long_his -= amount
+            # else:
+            #     self.volume_long_today -= (amount - self.volume_long_his)
+            #     self.volume_long_his = 0
             self.volume_long_frozen_today -= amount
             marginValue = -1*(self.position_price_long * amount*self.market_preset.get('unit_table') *\
                 self.market_preset['buy_frozen_coeff'])

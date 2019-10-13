@@ -409,6 +409,7 @@ class QIFI_Account():
             if (qapos.volume_short - qapos.volume_short_frozen) >= amount:
                 # check
                 qapos.volume_short_frozen_today += amount
+                qapos.volume_short_today -= amount
                 res = True
             else:
                 self.log("BUYCLOSE 仓位不足")
@@ -416,6 +417,7 @@ class QIFI_Account():
         elif towards == ORDER_DIRECTION.BUY_CLOSETODAY:
             if (qapos.volume_short_today - qapos.volume_short_frozen_today) >= amount:
                 qapos.volume_short_frozen_today += amount
+                qapos.volume_short_today -= amount
                 res = True
             else:
                 self.log("BUYCLOSETODAY 今日仓位不足")
@@ -425,6 +427,7 @@ class QIFI_Account():
             # self.log(amount)
             if (qapos.volume_long - qapos.volume_long_frozen) >= amount:
                 qapos.volume_long_frozen_today += amount
+                qapos.volume_long_today -= amount
                 res = True
             else:
                 self.log("SELL CLOSE 仓位不足")
@@ -435,6 +438,7 @@ class QIFI_Account():
                 # self.log(self.volume_long_today - self.volume_long_frozen)
                 # self.log(amount)
                 qapos.volume_long_frozen_today += amount
+                qspos.volume_long_today -= amount
                 return True
             else:
                 self.log("SELLCLOSETODAY 今日仓位不足")
