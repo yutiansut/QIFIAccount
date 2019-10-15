@@ -207,7 +207,7 @@ class QIFI_Account():
 
     @property
     def dtstr(self):
-        return str(datetime.datetime.now())
+        return str(datetime.datetime.now()).replace('.', ' ')
 
     def ask_deposit(self, money):
 
