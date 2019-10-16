@@ -207,7 +207,7 @@ class QIFI_Account():
 
     @property
     def dtstr(self):
-        return str(datetime.datetime.now()).replace('.', ' ')
+        return str(datetime.datetime.now()).replace('.', '-')
 
     def ask_deposit(self, money):
 
@@ -363,8 +363,8 @@ class QIFI_Account():
 
     def transform_dt(self, times):
         if isinstance(times, str):
-            tradedt = datetime.datetime.strptime(times, '%Y-%m-%d ^ %H:%M:%S') if len(
-                times) == 19 else datetime.datetime.strptime(times, '%Y-%m-%d %H:%M:%S.%f')
+            tradedt = datetime.datetime.strptime(times, '%Y-%m-%d %H:%M:%S') if len(
+                times) == 19 else datetime.datetime.strptime(times.replace('-', '.'), '%Y-%m-%d %H:%M:%S.%f')
             return tradedt.timestamp()*1000000000
         elif isinstance(times, datetime.datetime):
             return tradedt.timestamp()*1000000000
