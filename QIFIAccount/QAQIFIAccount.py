@@ -608,7 +608,7 @@ class QIFI_Account():
             margin, close_profit = self.get_position(code).update_pos(
                 trade_price, trade_amount, trade_towards)
 
-            self.money -= margin
+            self.money -= (margin - close_profit)
             self.close_profit += close_profit
 
             self.sync()
