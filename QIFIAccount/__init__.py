@@ -1,4 +1,4 @@
-__version__= '1.5'
+__version__= '1.6'
 __author__= 'yutiansut'
 
 from QIFIAccount.QAQIFIAccount import QIFI_Account, ORDER_DIRECTION
