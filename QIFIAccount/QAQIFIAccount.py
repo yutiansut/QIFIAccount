@@ -474,7 +474,7 @@ class QIFI_Account():
     def send_order(self, code: str, amount: float, price: float, towards: int, order_id: str = ''):
         order_id = str(uuid.uuid4()) if order_id == '' else order_id
         if self.order_check(code, amount, price, towards, order_id):
-            # self.log("order check success")
+            self.log("order check success")
             direction, offset = parse_orderdirection(towards)
             self.event_id += 1
             order = {
@@ -538,10 +538,10 @@ class QIFI_Account():
         self.log('撤单成功 {}'.format(order_id))
 
     def make_deal(self, order: dict):
-
-        self.receive_deal(order["instrument_id"], trade_price=order["limit_price"], trade_time=self.dtstr,
-                          trade_amount=order["volume_left"], trade_towards=order["towards"],
-                          order_id=order['order_id'], trade_id=str(uuid.uuid4()))
+        if isinstance(order, dict):
+            self.receive_deal(order["instrument_id"], trade_price=order["limit_price"], trade_time=self.dtstr,
+                            trade_amount=order["volume_left"], trade_towards=order["towards"],
+                            order_id=order['order_id'], trade_id=str(uuid.uuid4()))
 
     def receive_deal(self,
                      code,
@@ -604,6 +604,7 @@ class QIFI_Account():
                 "trade_date_time": self.transform_dt(trade_time)}
 
             # update accounts
+            print('update trade')
 
             margin, close_profit = self.get_position(code).update_pos(
                 trade_price, trade_amount, trade_towards)
