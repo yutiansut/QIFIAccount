@@ -49,7 +49,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host='127.0.0.1'):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host='127.0.0.1', init_cash= 1000000):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -88,7 +88,7 @@ class QIFI_Account():
         self.last_updatetime = ""
         self.status = 200
         self.trading_day = ""
-
+        self.init_cash = init_cash
         self.pre_balance = 0
 
         self.static_balance = 0
@@ -264,7 +264,7 @@ class QIFI_Account():
             "fetch_amount": 0.0,
             "qry_count": 0
         }
-        self.ask_deposit(1000000)
+        self.ask_deposit(self.init_cash)
 
     def add_position(self, position):
 
