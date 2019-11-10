@@ -37,7 +37,7 @@ except:
 """
 """
 
-VERSION = '1.9'
+VERSION = '1.9.1'
 AUTHOR = 'yutiansut'
 
 
@@ -82,7 +82,7 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
     ],
-    install_requires=['quantaxis'],
+    install_requires=['quantaxis', 'qaenv'],
     # install_requires=requirements,
     keywords=KEYWORDS,
     author=AUTHOR,

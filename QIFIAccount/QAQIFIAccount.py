@@ -3,7 +3,7 @@ import uuid
 from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
 from QIFIAccount.QAPosition import QA_Position
 import pymongo
-
+from qaenv import mongo_ip
 
 class ORDER_DIRECTION():
     """订单的买卖方向
@@ -49,7 +49,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host='127.0.0.1', init_cash= 1000000):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host= mongo_ip, init_cash= 1000000):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
