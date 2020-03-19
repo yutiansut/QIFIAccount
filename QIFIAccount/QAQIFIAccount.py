@@ -175,7 +175,7 @@ class QIFI_Account():
                 self.settle()
 
     def sync(self):
-        # self.log(self.message)
+        self.on_sync()
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
             '$set': self.message}, upsert=True)
         self.db.hisaccount.insert_one(
@@ -204,6 +204,9 @@ class QIFI_Account():
             item.settle()
 
         self.sync()
+
+    def on_sync(self):
+        pass
 
     @property
     def dtstr(self):
@@ -279,7 +282,7 @@ class QIFI_Account():
 
     def log(self, message):
         print(message)
-        self.events[self.dtstr] = message
+        #self.events[self.dtstr] = message
 
     @property
     def open_orders(self):
@@ -505,10 +508,14 @@ class QIFI_Account():
             self.orders[order_id] = order
             self.log('下单成功 {}'.format(order_id))
             self.sync()
+            self.on_ordersend(order)
             return order
         else:
             self.log(RuntimeError("ORDER CHECK FALSE: {}".format(code)))
             return False
+
+    def on_ordersend(self, order):
+        pass
 
     def cancel_order(self, order_id):
         """Initial
@@ -632,16 +639,17 @@ class QIFI_Account():
         pass
 
     def on_price_change(self, code, price):
+        if code in self.positions.keys():
+            try:
+                pos = self.get_position(code)
+                if pos.last_price == price:
+                    pass
+                else:
+                    pos.last_price = price
+                    self.sync()
+            except Exception as e:
 
-        try:
-            pos = self.get_position(code)
-            if pos.last_price == price:
-                pass
-            else:
-                pos.last_price = price
-                self.sync()
-        except Exception as e:
-            self.log(e)
+                self.log(e)
 
 
 if __name__ == "__main__":
