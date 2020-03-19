@@ -64,7 +64,7 @@ if __name__ == '__main__':
         EXCHANGE_ID,
         MARKET_TYPE,
         ORDER_DIRECTION)
-    acc = QStock_Account('userx', 'userx', eventmq_ip='192.168.2.117')
+    acc = QStock_Account('userx1', 'userx1', eventmq_ip='192.168.2.117')
     acc.initial()
 
     acc.log(acc.message)
