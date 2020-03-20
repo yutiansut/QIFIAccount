@@ -166,6 +166,8 @@ class QIFI_Account():
             self.status = message.get('status')
             self.wsuri = message.get('wsuri')
 
+            self.on_reload()
+
             if message.get('trading_day', '') == str(self.trading_day):
                 # reload
                 pass
@@ -206,6 +208,9 @@ class QIFI_Account():
         self.sync()
 
     def on_sync(self):
+        pass
+
+    def on_reload(self):
         pass
 
     @property

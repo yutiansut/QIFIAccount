@@ -37,10 +37,12 @@ class QStock_Account(QIFI_Account):
         data = json.loads(data)
         self.on_price_change(data['code'][2:], price=float(data['close']))
 
-    def on_ordersend(self, order):
-
+    def ask_subscribe(self, code):
         self.pub.pub(json.dumps({'account_cookie': self.username,
-                                 'code': order['instrument_id']}), routing_key='All')
+                                 'code': code}), routing_key='All')
+
+    def on_ordersend(self, order):
+        self.ask_subscribe(order['instrument_id'])
 
     def listen_order_callback(self, a, b, c, data):
         data = json.loads(data)
@@ -56,6 +58,10 @@ class QStock_Account(QIFI_Account):
 
     def on_sync(self):
         self.pub_acc.pub(json.dumps(self.message), routing_key=self.username)
+
+    def on_reload(self):
+        for item in self.positions.keys():
+            self.ask_subscribe(item)
 
 
 if __name__ == '__main__':
