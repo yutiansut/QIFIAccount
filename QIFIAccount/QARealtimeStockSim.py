@@ -12,7 +12,7 @@ from QAPUBSUB.consumer import subscriber_routing, subscriber_topic
 from QIFIAccount.QAQIFIAccount import QIFI_Account
 
 
-class QStock_Account(QIFI_Account):
+class QIFI_StockSIM_Account(QIFI_Account):
     def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000,
                  eventmq_ip=eventmq_ip, eventmq_port=eventmq_port):
         super().__init__(username, password, model, broker_name, trade_host, init_cash)
@@ -71,8 +71,8 @@ if __name__ == '__main__':
         EXCHANGE_ID,
         MARKET_TYPE,
         ORDER_DIRECTION)
-    acc = QStock_Account('userx1', 'userx1',
-                         eventmq_ip='192.168.2.117', eventmq_port=5672)
+    acc = QIFI_StockSIM_Account('userx1', 'userx1',
+                                eventmq_ip='192.168.2.117', eventmq_port=5672)
 
     acc.initial()
 
