@@ -32,7 +32,7 @@ def qasimStock(user, password, eventmq_ip, eventmq_port, trade_host):
 @click.option('--eventmq_ip', default='192.168.2.117')
 @click.option('--eventmq_port', default=5672)
 @click.option('--code', default='000001')
-@click.option('--price', default=20)
+@click.option('--price', default=20.0)
 @click.option('--amount', default=100)
 @click.option('--towards', default='BUY')
 def qasimstock_sendorder(user, eventmq_ip, eventmq_port, code, price, amount, towards):
