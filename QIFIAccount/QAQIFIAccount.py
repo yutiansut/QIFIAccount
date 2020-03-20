@@ -206,7 +206,7 @@ class QIFI_Account():
         for item in self.positions.values():
             item.settle()
 
-        self.sync()
+        #self.sync()
 
     def on_sync(self):
         pass
