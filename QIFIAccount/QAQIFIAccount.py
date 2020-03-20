@@ -5,6 +5,7 @@ from QIFIAccount.QAPosition import QA_Position
 import pymongo
 from qaenv import mongo_ip
 
+
 class ORDER_DIRECTION():
     """订单的买卖方向
 
@@ -49,7 +50,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host= mongo_ip, init_cash= 1000000):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -553,8 +554,8 @@ class QIFI_Account():
     def make_deal(self, order: dict):
         if isinstance(order, dict):
             self.receive_deal(order["instrument_id"], trade_price=order["limit_price"], trade_time=self.dtstr,
-                            trade_amount=order["volume_left"], trade_towards=order["towards"],
-                            order_id=order['order_id'], trade_id=str(uuid.uuid4()))
+                              trade_amount=order["volume_left"], trade_towards=order["towards"],
+                              order_id=order['order_id'], trade_id=str(uuid.uuid4()))
 
     def receive_deal(self,
                      code,

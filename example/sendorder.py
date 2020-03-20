@@ -10,18 +10,18 @@ def test_send_order(host='192.168.2.117'):
         user='admin', password='admin', host=host, exchange='QAORDER_ROUTER')
 
     price = {
-            # '000766': {
-            #     'price': 5.81,
-            #     'amount': 2000},
-            # '002038': {
-            #     'price': 12.15,
-            #     'amount': 2000},
-            # '002880': {
-            #     'price': 63.64,
-            #     'amount': 200}, 
-            '300236': {
-                'price': 67.54, 
-                'amount': 700}}
+        # '000766': {
+        #     'price': 5.81,
+        #     'amount': 2000},
+        # '002038': {
+        #     'price': 12.15,
+        #     'amount': 2000},
+        # '002880': {
+        #     'price': 63.64,
+        #     'amount': 200},
+        '300236': {
+            'price': 67.54,
+            'amount': 700}}
     for acc in ['userx1']:
 
         for code in price.keys():
@@ -44,6 +44,7 @@ def test_send_order(host='192.168.2.117'):
         #     'order_id': "63da3715-eaeb-45de-95a4-ae6ca0f4700f",
         #     'account_cookie': acc
         # }), routing_key=acc)
+
 
 if __name__ == "__main__":
     test_send_order()

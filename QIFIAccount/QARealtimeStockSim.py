@@ -13,11 +13,12 @@ from QIFIAccount.QAQIFIAccount import QIFI_Account
 
 
 class QStock_Account(QIFI_Account):
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000, eventmq_ip=eventmq_ip):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000,
+                 eventmq_ip=eventmq_ip, eventmq_port=eventmq_port):
         super().__init__(username, password, model, broker_name, trade_host, init_cash)
 
         self.pub = producer.publisher_routing(
-            exchange='qamdgateway', host=eventmq_ip, durable=True)
+            exchange='qamdgateway', host=eventmq_ip, port=eventmq_port, durable=True)
         self.subrealtime = subscriber_topic(
             host=eventmq_ip, port=eventmq_port, exchange='QASMG', routing_key=username)
 
@@ -31,7 +32,7 @@ class QStock_Account(QIFI_Account):
         threading.Thread(target=self.ordersub.start).start()
 
         self.pub_acc = producer.publisher_topic(
-            exchange='qaStandardAcc', host=eventmq_ip, durable=True)
+            exchange='qaStandardAcc', host=eventmq_ip, port=eventmq_port,  durable=True)
 
     def realtime_data_callback(self, a, b, c, data):
         data = json.loads(data)
@@ -70,7 +71,9 @@ if __name__ == '__main__':
         EXCHANGE_ID,
         MARKET_TYPE,
         ORDER_DIRECTION)
-    acc = QStock_Account('userx1', 'userx1', eventmq_ip='192.168.2.117')
+    acc = QStock_Account('userx1', 'userx1',
+                         eventmq_ip='192.168.2.117', eventmq_port=5672)
+
     acc.initial()
 
     acc.log(acc.message)
