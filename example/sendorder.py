@@ -10,17 +10,17 @@ def test_send_order(host='192.168.2.117'):
         user='admin', password='admin', host=host, exchange='QAORDER_ROUTER')
 
     price = {
-            '000766': {
-                'price': 5.81,
-                'amount': 2000},
-            '002038': {
-                'price': 12.15,
-                'amount': 2000},
-            '002880': {
-                'price': 63.64,
-                'amount': 200}, 
+            # '000766': {
+            #     'price': 5.81,
+            #     'amount': 2000},
+            # '002038': {
+            #     'price': 12.15,
+            #     'amount': 2000},
+            # '002880': {
+            #     'price': 63.64,
+            #     'amount': 200}, 
             '300236': {
-                'price': 58.74, 
+                'price': 67.54, 
                 'amount': 700}}
     for acc in ['userx1']:
 
