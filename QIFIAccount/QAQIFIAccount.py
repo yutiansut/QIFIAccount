@@ -1,9 +1,11 @@
 import datetime
 import uuid
-from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
-from QIFIAccount.QAPosition import QA_Position
+
 import pymongo
 from qaenv import mongo_ip
+
+from QIFIAccount.QAPosition import QA_Position
+from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
 
 
 class ORDER_DIRECTION():
@@ -50,7 +52,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000, taskid = str(uuid.uuid4())):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -98,7 +100,9 @@ class QIFI_Account():
         self.withdraw = 0  # 出金
         self.withdrawQuota = 0  # 可取金额
         self.close_profit = 0
+        self.premium = 0  #本交易日内交纳的期权权利金
         self.event_id = 0
+        self.taskid = taskid
         self.money = 0
         # QIFI 协议
         self.transfers = {}
@@ -152,6 +156,7 @@ class QIFI_Account():
             self.trades = message.get('trades')
             self.transfers = message.get('transfers')
             self.orders = message.get('orders')
+            self.taskid = message.get('taskid', str(uuid.uuid4()))
 
             positions = message.get('positions')
             for position in positions.values():
@@ -193,7 +198,7 @@ class QIFI_Account():
         self.close_profit = 0
         self.deposit = 0  # 入金
         self.withdraw = 0  # 出金
-
+        self.premium = 0
         self.money += self.frozen_margin
 
         self.orders = {}
@@ -312,7 +317,7 @@ class QIFI_Account():
             "money": self.money,         # // 当前可用现金
             "pub_host": self.pub_host,
             "trade_host": self.trade_host,
-            "taskid": "",
+            "taskid": self.taskid,
             "sourceid": self.source_id,
             "updatetime": str(self.last_updatetime),
             "wsuri": self.wsuri,
@@ -392,11 +397,9 @@ class QIFI_Account():
 
     @property
     def commission(self):
+        """本交易日内交纳的手续费
+        """
         return sum([position.commission for position in self.positions.values()])
-
-    @property
-    def premium(self):
-        pass
 
     @property
     def balance(self):
