@@ -111,7 +111,7 @@ class QIFI_Account():
 
         self.frozen = {}
 
-        self.events = {}
+        self.event = {}
         self.positions = {}
         self.trades = {}
         self.orders = {}
@@ -152,7 +152,7 @@ class QIFI_Account():
             self.withdrawQuota = accpart.get('WithdrawQuota')
             self.close_profit = accpart.get('close_profit')
             self.static_balance = accpart.get('static_balance')
-            self.events = message.get('events')
+            self.event = message.get('event')
             self.trades = message.get('trades')
             self.transfers = message.get('transfers')
             self.orders = message.get('orders')
@@ -205,7 +205,7 @@ class QIFI_Account():
         self.frozen = {}
         self.trades = {}
         self.transfers = {}
-        self.events = {}
+        self.event = {}
         self.event_id = 0
 
         for item in self.positions.values():
@@ -234,7 +234,7 @@ class QIFI_Account():
             "error_id": 0,  # 转账结果代码
             "error_msg": "成功",  # 转账结果代码
         }
-        self.events[self.dtstr] = "转账成功 {}".format(money)
+        self.event[self.dtstr] = "转账成功 {}".format(money)
 
     def ask_withdraw(self, money):
         if self.withdrawQuota > money:
@@ -247,9 +247,9 @@ class QIFI_Account():
                 "error_id": 0,  # 转账结果代码
                 "error_msg": "成功",  # 转账结果代码
             }
-            self.events[self.dtstr] = "转账成功 {}".format(-money)
+            self.event[self.dtstr] = "转账成功 {}".format(-money)
         else:
-            self.events[self.dtstr] = "转账失败: 余额不足 left {}  ask {}".format(
+            self.event[self.dtstr] = "转账失败: 余额不足 left {}  ask {}".format(
                 self.withdrawQuota, money)
 
     def create_simaccount(self):
@@ -267,7 +267,7 @@ class QIFI_Account():
         self.event_id = 0
         self.transfers = {}
         self.banks = {}
-        self.events = {}
+        self.event = {}
         self.positions = {}
         self.trades = {}
         self.orders = {}
@@ -293,7 +293,7 @@ class QIFI_Account():
 
     def log(self, message):
         print(message)
-        #self.events[self.dtstr] = message
+        #self.event[self.dtstr] = message
 
     @property
     def open_orders(self):
@@ -328,7 +328,7 @@ class QIFI_Account():
             "trades": self.trades,
             "positions": self.position_msg,
             "orders": self.orders,
-            "events": self.events,
+            "event": self.event,
             "transfers": self.transfers,
             "banks": self.banks,
             "frozen": self.frozen,
