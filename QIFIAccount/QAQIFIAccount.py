@@ -511,7 +511,7 @@ class QIFI_Account():
                 "insert_date_time": self.transform_dt(self.dtstr),
                 'order_time': self.dtstr,
                 "exchange_order_id": str(uuid.uuid4()),
-                "status": 100,
+                "status": "ALIVE",
                 "volume_left": int(amount),
                 "last_msg": "已报"
             }
@@ -534,7 +534,7 @@ class QIFI_Account():
         """
         od = self.orders[order_id]
         od['last_msg'] = '已撤单'
-        od['status'] = 500
+        od['status'] = "CANCEL"
         od['volume_left'] = 0
 
         if od['offset'] in ['CLOSE', 'CLOSETODAY']:
@@ -583,7 +583,7 @@ class QIFI_Account():
                 frozen['amount'] = 0
                 frozen['money'] = 0
                 od['last_msg'] = '全部成交'
-                od["status"] = 300
+                od["status"] = "FINISHED"
                 self.log('全部成交 {}'.format(order_id))
 
             elif trade_amount < vl:
@@ -594,7 +594,7 @@ class QIFI_Account():
                 frozen['money'] -= release_money
 
                 od['last_msg'] = '部分成交'
-                od["status"] = 200
+                od["status"] = "ALIVE"
                 self.log('部分成交 {}'.format(order_id))
 
             od['volume_left'] -= trade_amount
