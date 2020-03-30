@@ -337,19 +337,19 @@ class QA_Position():
             'moneypresetLeft': self.moneypresetLeft,
             'lastupdatetime': str(self.time),
             # 持仓量
-            'volume_long_today': self.volume_long_today,
-            'volume_long_his': self.volume_long_his,
-            'volume_long': self.volume_long,
-            'volume_short_today': self.volume_short_today,
-            'volume_short_his': self.volume_short_his,
-            'volume_short': self.volume_short,
+            'volume_long_today': int(self.volume_long_today),
+            'volume_long_his': int(self.volume_long_his),
+            'volume_long': int(self.volume_long),
+            'volume_short_today': int(self.volume_short_today),
+            'volume_short_his': int(self.volume_short_his),
+            'volume_short': int(self.volume_short),
             # 平仓委托冻结(未成交)
-            'volume_long_frozen_today': self.volume_long_frozen_today,
-            'volume_long_frozen_his': self.volume_long_frozen_his,
-            'volume_long_frozen': self.volume_long_frozen,
-            'volume_short_frozen_today': self.volume_short_frozen_today,
-            'volume_short_frozen_his': self.volume_short_frozen_his,
-            'volume_short_frozen': self.volume_short_frozen,
+            'volume_long_frozen_today': int(self.volume_long_frozen_today),
+            'volume_long_frozen_his': int(self.volume_long_frozen_his),
+            'volume_long_frozen': int(self.volume_long_frozen),
+            'volume_short_frozen_today': int(self.volume_short_frozen_today),
+            'volume_short_frozen_his': int(self.volume_short_frozen_his),
+            'volume_short_frozen': int(self.volume_short_frozen),
             # 保证金
             'margin_long': self.margin_long,       # 多头保证金
             'margin_short': self.margin_short,
@@ -404,7 +404,7 @@ class QA_Position():
         msg.update(self.realtime_message)
         return msg
 
-    def order_check(self, amount: float, price: float, towards: int, order_id: str) -> bool:
+    def order_check(self, amount: int, price: float, towards: int, order_id: str) -> bool:
         res = False
         if towards == ORDER_DIRECTION.BUY_CLOSE:
             # print('buyclose')
@@ -448,7 +448,7 @@ class QA_Position():
             """
             冻结的保证金
             """
-            moneyneed = float(amount) * float(price) * float(
+            moneyneed = int(amount) * float(price) * float(
                 self.market_preset.get('unit_table',
                                        1)
             ) * float(self.market_preset.get('buy_frozen_coeff',
@@ -464,7 +464,7 @@ class QA_Position():
 
         return res
 
-    def send_order(self, amount: float, price: float, towards: int):
+    def send_order(self, amount: int, price: float, towards: int):
         order_id = str(uuid.uuid4())
         if self.order_check(amount, price, towards, order_id):
             #print('order check success')
@@ -475,7 +475,7 @@ class QA_Position():
                 'towards': int(towards),
                 'exchange_id': str(self.exchange_id),
                 'order_time': str(self.time),
-                'volume': float(amount),
+                'volume': int(amount),
                 'price': float(price),
                 'order_id': order_id,
                 'status': ORDER_STATUS.NEW
@@ -510,7 +510,7 @@ class QA_Position():
             position_profit_short: -200
         """
         self.on_price_change(price)
-        temp_cost = float(amount)*float(price) * \
+        temp_cost = int(amount)*float(price) * \
             float(self.market_preset.get('unit_table', 1))
         profit = 0
         if towards == ORDER_DIRECTION.BUY:

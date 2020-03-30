@@ -411,7 +411,7 @@ class QIFI_Account():
 
         return self.static_balance + self.deposit - self.withdraw + self.float_profit + self.close_profit
 
-    def order_check(self, code: str, amount: float, price: float, towards: int, order_id: str) -> bool:
+    def order_check(self, code: str, amount: int, price: float, towards: int, order_id: str) -> bool:
         res = False
         qapos = self.get_position(code)
 
@@ -497,13 +497,13 @@ class QIFI_Account():
                 "towards": int(towards),
                 "exchange_id": self.market_preset.get_exchange(code),
                 "order_time": self.dtstr,
-                "volume": float(amount),
+                "volume": int(amount),
                 "price": float(price),
                 "order_id": order_id,
                 "seqno": self.event_id,
                 "direction": direction,
                 "offset": offset,
-                "volume_orign": float(amount),
+                "volume_orign": int(amount),
                 "price_type": "LIMIT",
                 "limit_price": float(price),
                 "time_condition": "GFD",
@@ -512,7 +512,7 @@ class QIFI_Account():
                 'order_time': self.dtstr,
                 "exchange_order_id": str(uuid.uuid4()),
                 "status": 100,
-                "volume_left": float(amount),
+                "volume_left": int(amount),
                 "last_msg": "已报"
             }
             self.orders[order_id] = order
