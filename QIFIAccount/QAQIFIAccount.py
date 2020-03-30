@@ -618,6 +618,7 @@ class QIFI_Account():
                 "volume": trade_amount,
                 "price": trade_price,
                 "trade_time": trade_time,
+                "commission": float(0),
                 "trade_date_time": self.transform_dt(trade_time)}
 
             # update accounts
