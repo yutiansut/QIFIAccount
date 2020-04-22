@@ -182,6 +182,10 @@ class QIFI_Account():
                 # settle
                 self.settle()
 
+    def create_fromQIFI(self, message):
+        pass
+
+
     def sync(self):
         self.on_sync()
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {

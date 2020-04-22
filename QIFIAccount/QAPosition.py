@@ -781,46 +781,49 @@ class QA_Position():
             return commission_fee
 
     def loadfrommessage(self, message):
-        self.__init__(
-            code=message['code'],
-            account_cookie=message['account_cookie'],
-            frozen=message['frozen'],
-            portfolio_cookie=message['portfolio_cookie'],
-            username=message['username'],
-            moneypreset=message['moneypreset'],  # 初始分配资金
-            moneypresetLeft=message['moneypresetLeft'],
-            volume_long_today=message['volume_long_today'],
-            volume_long_his=message['volume_long_his'],
-            volume_short_today=message['volume_short_today'],
-            volume_short_his=message['volume_short_his'],
+        try:
+          self.__init__(
+              code = message.get('code', 'instrument_id'),
+              account_cookie=message['account_cookie'],
+              frozen=message['frozen'],
+              portfolio_cookie=message['portfolio_cookie'],
+              username=message['username'],
+              moneypreset=message['moneypreset'],  # 初始分配资金
+              moneypresetLeft=message['moneypresetLeft'],
+              volume_long_today=message['volume_long_today'],
+              volume_long_his=message['volume_long_his'],
+              volume_short_today=message['volume_short_today'],
+              volume_short_his=message['volume_short_his'],
 
-            volume_long_frozen_his=message['volume_long_frozen_his'],
-            volume_long_frozen_today=message['volume_long_frozen_today'],
-            volume_short_frozen_his=message['volume_short_frozen_his'],
-            volume_short_frozen_today=message['volume_short_frozen_today'],
+              volume_long_frozen_his=message['volume_long_frozen_his'],
+              volume_long_frozen_today=message['volume_long_frozen_today'],
+              volume_short_frozen_his=message['volume_short_frozen_his'],
+              volume_short_frozen_today=message['volume_short_frozen_today'],
 
-            margin_long=message['margin_long'],
-            margin_short=message['margin_short'],
+              margin_long=message['margin_long'],
+              margin_short=message['margin_short'],
 
-            open_price_long=message['open_price_long'],
-            open_price_short=message['open_price_short'],
-            # 逐日盯市的前一交易日的结算价
-            position_price_long=message['position_price_long'],
-            # 逐日盯市的前一交易日的结算价
-            position_price_short=message['position_price_short'],
+              open_price_long=message['open_price_long'],
+              open_price_short=message['open_price_short'],
+              # 逐日盯市的前一交易日的结算价
+              position_price_long=message['position_price_long'],
+              # 逐日盯市的前一交易日的结算价
+              position_price_short=message['position_price_short'],
 
-            open_cost_long=message['open_cost_long'],
-            open_cost_short=message['open_cost_short'],
-            position_cost_long=message['position_cost_long'],
-            position_cost_short=message['position_cost_short'],
-            position_id=message['position_id'],
+              open_cost_long=message['open_cost_long'],
+              open_cost_short=message['open_cost_short'],
+              position_cost_long=message['position_cost_long'],
+              position_cost_short=message['position_cost_short'],
+              position_id=message['position_id'],
 
-            market_type=message['market_type'],
-            exchange_id=message['exchange_id'],
-            trades=message['trades'],
-            orders=message['orders'],
-            #commission=message['commission'],
-            name=message['name'])
+              market_type=message['market_type'],
+              exchange_id=message['exchange_id'],
+              trades=message['trades'],
+              orders=message['orders'],
+              #commission=message['commission'],
+              name=message['name'])
+        except:
+            self.read_diff(message)
         if self.volume_long+ self.volume_short >0:
             self.last_price =( self.open_price_long*self.volume_long + self.open_price_short*self.volume_short)/(self.volume_long+ self.volume_short)
         else:
