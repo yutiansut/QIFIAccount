@@ -440,7 +440,7 @@ class QA_Position():
                 print('SELL CLOSE 仓位不足')
 
         elif towards == ORDER_DIRECTION.SELL_CLOSETODAY:
-            if (self.volume_long_today - self.volume_short_frozen_today) >= amount:
+            if (self.volume_long_today - self.volume_long_frozen_today) >= amount:
                 # print('sellclosetoday')
                 #print(self.volume_long_today - self.volume_long_frozen)
                 # print(amount)
