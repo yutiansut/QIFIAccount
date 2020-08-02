@@ -71,7 +71,8 @@ if __name__ == '__main__':
         EXCHANGE_ID,
         MARKET_TYPE,
         ORDER_DIRECTION)
-    acc = QStock_Account('userx1', 'userx1', eventmq_ip='192.168.2.117', eventmq_port=5672)
+    acc = QStock_Account('userx1', 'userx1',
+                         eventmq_ip='192.168.2.117', eventmq_port=5672)
 
     acc.initial()
 
