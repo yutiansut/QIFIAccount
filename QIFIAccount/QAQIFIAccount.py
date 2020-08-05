@@ -106,6 +106,7 @@ class QIFI_Account():
         self.money = 0
         # QIFI 协议
         self.transfers = {}
+        self.schedule = {}
 
         self.banks = {}
 
@@ -213,6 +214,10 @@ class QIFI_Account():
 
         for item in self.positions.values():
             item.settle()
+
+        for order in self.schedule.values():
+            self.send_order(order['code'], order['amount'],
+                            order['price'], order['towards'], order['order_id'])
 
         # self.sync()
 
@@ -388,6 +393,7 @@ class QIFI_Account():
 
 
 # 惰性计算
+
     @property
     def available(self):
         return self.money
@@ -664,6 +670,21 @@ class QIFI_Account():
             except Exception as e:
 
                 self.log(e)
+
+    def order_schedule(self, code: str, amount: float, price: float, towards: int, order_id: str = ''):
+        """
+        预调仓接口
+        """
+        if order_id == '':
+            order_id = str(uuid.uuid4())
+        orderx = {
+            'code': code,
+            'amount': amount,
+            'price': price,
+            'towards': towards,
+            'order_id': order_id
+        }
+        self.schedule[order_id] = orderx
 
 
 if __name__ == "__main__":
