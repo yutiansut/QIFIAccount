@@ -8,6 +8,19 @@ pip install qifiaccount
 ```
 
 
+QIFIAccount/ QIFI的订书机的时间序列处理模式将兼容回测
+
+--- timeseries => [QIFI, QIFI, QIFI, ... , QIFI..]
+
+具体可以参考QIFIManager中的管理代码
+
+
+
+
+
+
+
+
 ### 用法:
 
 参见 /usage 文件夹下的ipython notebook

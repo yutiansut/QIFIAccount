@@ -52,7 +52,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000, taskid = str(uuid.uuid4())):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000, taskid=str(uuid.uuid4())):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -100,7 +100,7 @@ class QIFI_Account():
         self.withdraw = 0  # 出金
         self.withdrawQuota = 0  # 可取金额
         self.close_profit = 0
-        self.premium = 0  #本交易日内交纳的期权权利金
+        self.premium = 0  # 本交易日内交纳的期权权利金
         self.event_id = 0
         self.taskid = taskid
         self.money = 0
@@ -185,7 +185,6 @@ class QIFI_Account():
     def create_fromQIFI(self, message):
         pass
 
-
     def sync(self):
         self.on_sync()
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
@@ -215,7 +214,7 @@ class QIFI_Account():
         for item in self.positions.values():
             item.settle()
 
-        #self.sync()
+        # self.sync()
 
     def on_sync(self):
         pass
