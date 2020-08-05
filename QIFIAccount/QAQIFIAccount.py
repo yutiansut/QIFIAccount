@@ -734,9 +734,7 @@ if __name__ == "__main__":
 
     acc2.log(acc2.message)
 
-
     print('test for sync')
     acc2.sync()
-
 
     print('test for settle')
