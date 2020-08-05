@@ -62,7 +62,7 @@ class QIFI_Account():
 
         使用 model = SIM/ REAL来切换
 
-
+        qifiaccount 不去区分你的持仓是股票还是期货, 因此你可以实现跨市场的交易持仓管理
         """
         self.user_id = username
         self.username = username
@@ -84,7 +84,10 @@ class QIFI_Account():
         self.bankname = "QASIMBank"
 
         self.trade_host = trade_host
-        self.db = pymongo.MongoClient(trade_host).QAREALTIME
+        if model == 'BACKTEST':
+            self.db = pymongo.MongoClient(trade_host).quantaxis.history
+        else:
+            self.db = pymongo.MongoClient(trade_host).QAREALTIME
 
         self.pub_host = ""
         self.trade_host = ""
