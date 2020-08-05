@@ -218,11 +218,19 @@ class QIFI_Account():
         for item in self.positions.values():
             item.settle()
 
+        # sell first >> second buy ==> for make sure have enough cash
+        buy_order_sche = []
         for order in self.schedule.values():
+            if order['towards'] > 0:
+                # buy order
+                buy_order_sche.append(order)
+            else:
+                self.send_order(order['code'], order['amount'],
+                                order['price'], order['towards'], order['order_id'])
+        for order in buy_order_sche:
             self.send_order(order['code'], order['amount'],
                             order['price'], order['towards'], order['order_id'])
-
-        # self.sync()
+        self.schedule = {}
 
     def on_sync(self):
         pass
@@ -691,32 +699,44 @@ class QIFI_Account():
 
 
 if __name__ == "__main__":
-    acc = QIFI_Account("x1", "x1")
-    acc.initial()
+    # acc = QIFI_Account("x1", "x1")
+    # acc.initial()
 
-    acc.log(acc.message)
+    # acc.log(acc.message)
 
-    r = acc.send_order('RB2001', 10, 5000, ORDER_DIRECTION.BUY_OPEN)
-    acc.log(r)
+    # r = acc.send_order('RB2001', 10, 5000, ORDER_DIRECTION.BUY_OPEN)
+    # acc.log(r)
 
-    acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
-                     acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
+    # acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
+    #                  acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
 
-    acc.log(acc.message)
+    # acc.log(acc.message)
 
-    acc.sync()
+    # acc.sync()
+
+    # this is a stock account
 
     acc2 = QIFI_Account("x1", "x1")
+    print('test for initial')
     acc2.initial()
 
-    acc.log(acc2.message)
+    acc2.log(acc2.message)
+
+    print('test for buy order')
 
     r = acc2.send_order('000001', 10, 12, ORDER_DIRECTION.BUY)
-    acc.log(r)
+    acc2.log(r)
+
+    print('test for receivedeal')
 
     acc2.receive_deal(r['instrument_id'], 11.8, r['volume'], r['towards'],
                       acc2.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
 
-    acc.log(acc2.message)
+    acc2.log(acc2.message)
 
+
+    print('test for sync')
     acc2.sync()
+
+
+    print('test for settle')
