@@ -121,7 +121,7 @@ class QIFI_Account():
 
         self.reload()
 
-        if self.pre_balance == 0 and self.balance == 0 and self.model == "SIM":
+        if self.pre_balance == 0 and self.balance == 0 and self.model != "REAL":
             self.log('Create new Account')
             self.create_simaccount()
 
@@ -190,6 +190,7 @@ class QIFI_Account():
         self.on_sync()
         self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
             '$set': self.message}, upsert=True)
+            
         self.db.hisaccount.insert_one(
             {'updatetime': self.dtstr, 'account_cookie': self.user_id, 'accounts': self.account_msg})
 
@@ -287,6 +288,38 @@ class QIFI_Account():
             "qry_count": 0
         }
         self.ask_deposit(self.init_cash)
+
+
+    def create_backtestaccount(self):
+        """
+        生成一个回测的账户
+        """
+        self.trading_day = ""
+        self.pre_balance = self.init_cash
+        self.static_balance = self.init_cash
+        self.deposit = 0  # 入金
+        self.withdraw = 0  # 出金
+        self.withdrawQuota = 0  # 可取金额
+        self.user_id = self.user_id
+        self.password = self.password
+        self.money = self.init_cash
+        self.close_profit = 0
+        self.event_id = 0
+        self.transfers = {}
+        self.banks = {}
+        self.event = {}
+        self.positions = {}
+        self.trades = {}
+        self.orders = {}
+        self.banks[str(self.bank_id)] = {
+            "id": self.bank_id,
+            "name": self.bankname,
+            "bank_account": "",
+            "fetch_amount": 0.0,
+            "qry_count": 0
+        }
+        # self.ask_deposit(self.init_cash)
+
 
     def add_position(self, position):
 
