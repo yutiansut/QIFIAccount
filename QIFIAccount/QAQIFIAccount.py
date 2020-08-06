@@ -62,7 +62,7 @@ class QIFI_Account():
 
         使用 model = SIM/ REAL来切换
 
-
+        qifiaccount 不去区分你的持仓是股票还是期货, 因此你可以实现跨市场的交易持仓管理
         """
         self.user_id = username
         self.username = username
@@ -84,7 +84,10 @@ class QIFI_Account():
         self.bankname = "QASIMBank"
 
         self.trade_host = trade_host
-        self.db = pymongo.MongoClient(trade_host).QAREALTIME
+        if model == 'BACKTEST':
+            self.db = pymongo.MongoClient(trade_host).quantaxis
+        else:
+            self.db = pymongo.MongoClient(trade_host).QAREALTIME
 
         self.pub_host = ""
         self.trade_host = ""
@@ -93,7 +96,7 @@ class QIFI_Account():
         self.trading_day = ""
         self.init_cash = init_cash
         self.pre_balance = 0
-
+        self.datetime = ""
         self.static_balance = 0
 
         self.deposit = 0  # 入金
@@ -127,61 +130,64 @@ class QIFI_Account():
 
         self.sync()
 
+    
+
     def reload(self):
-        message = self.db.account.find_one(
-            {'account_cookie': self.user_id, 'password': self.password})
+        if self.model.upper() in ['REAL', 'SIM']:
+            message = self.db.account.find_one(
+                {'account_cookie': self.user_id, 'password': self.password})
 
-        time = datetime.datetime.now()
-        # resume/settle
+            time = datetime.datetime.now()
+            # resume/settle
 
-        if time.hour <= 15:
-            self.trading_day = time.date()
-        else:
-            if time.weekday() in [0, 1, 2, 3]:
-                self.trading_day = time.date() + datetime.timedelta(days=1)
-            elif time.weekday() in [4, 5, 6]:
-                self.trading_day = time.date() + datetime.timedelta(days=(7-time.weekday()))
-        if message is not None:
-            accpart = message.get('accounts')
-
-            self.money = message.get('money')
-            self.source_id = message.get('sourceid')
-
-            self.pre_balance = accpart.get('pre_balance')
-            self.deposit = accpart.get('deposit')
-            self.withdraw = accpart.get('withdraw')
-            self.withdrawQuota = accpart.get('WithdrawQuota')
-            self.close_profit = accpart.get('close_profit')
-            self.static_balance = accpart.get('static_balance')
-            self.event = message.get('event')
-            self.trades = message.get('trades')
-            self.transfers = message.get('transfers')
-            self.orders = message.get('orders')
-            self.taskid = message.get('taskid', str(uuid.uuid4()))
-
-            positions = message.get('positions')
-            for position in positions.values():
-                self.positions[position.get('instrument_id')] = QA_Position(
-                ).loadfrommessage(position)
-
-            for order in self.open_orders:
-                self.log('try to deal {}'.format(order))
-                self.make_deal(order)
-
-            self.banks = message.get('banks')
-
-            self.status = message.get('status')
-            self.wsuri = message.get('wsuri')
-
-            self.on_reload()
-
-            if message.get('trading_day', '') == str(self.trading_day):
-                # reload
-                pass
-
+            if time.hour <= 15:
+                self.trading_day = time.date()
             else:
-                # settle
-                self.settle()
+                if time.weekday() in [0, 1, 2, 3]:
+                    self.trading_day = time.date() + datetime.timedelta(days=1)
+                elif time.weekday() in [4, 5, 6]:
+                    self.trading_day = time.date() + datetime.timedelta(days=(7-time.weekday()))
+            if message is not None:
+                accpart = message.get('accounts')
+
+                self.money = message.get('money')
+                self.source_id = message.get('sourceid')
+
+                self.pre_balance = accpart.get('pre_balance')
+                self.deposit = accpart.get('deposit')
+                self.withdraw = accpart.get('withdraw')
+                self.withdrawQuota = accpart.get('WithdrawQuota')
+                self.close_profit = accpart.get('close_profit')
+                self.static_balance = accpart.get('static_balance')
+                self.event = message.get('event')
+                self.trades = message.get('trades')
+                self.transfers = message.get('transfers')
+                self.orders = message.get('orders')
+                self.taskid = message.get('taskid', str(uuid.uuid4()))
+
+                positions = message.get('positions')
+                for position in positions.values():
+                    self.positions[position.get('instrument_id')] = QA_Position(
+                    ).loadfrommessage(position)
+
+                for order in self.open_orders:
+                    self.log('try to deal {}'.format(order))
+                    self.make_deal(order)
+
+                self.banks = message.get('banks')
+
+                self.status = message.get('status')
+                self.wsuri = message.get('wsuri')
+
+                self.on_reload()
+
+                if message.get('trading_day', '') == str(self.trading_day):
+                    # reload
+                    pass
+
+                else:
+                    # settle
+                    self.settle()
 
     def create_fromQIFI(self, message):
         pass
@@ -216,11 +222,19 @@ class QIFI_Account():
         for item in self.positions.values():
             item.settle()
 
+        # sell first >> second buy ==> for make sure have enough cash
+        buy_order_sche = []
         for order in self.schedule.values():
+            if order['towards'] > 0:
+                # buy order
+                buy_order_sche.append(order)
+            else:
+                self.send_order(order['code'], order['amount'],
+                                order['price'], order['towards'], order['order_id'])
+        for order in buy_order_sche:
             self.send_order(order['code'], order['amount'],
                             order['price'], order['towards'], order['order_id'])
-
-        # self.sync()
+        self.schedule = {}
 
     def on_sync(self):
         pass
@@ -526,7 +540,7 @@ class QIFI_Account():
 
         return res
 
-    def send_order(self, code: str, amount: float, price: float, towards: int, order_id: str = ''):
+    def send_order(self, code: str, amount: float, price: float, towards: int, order_id: str = '', datetime: str = ''):
         order_id = str(uuid.uuid4()) if order_id == '' else order_id
         if self.order_check(code, amount, price, towards, order_id):
             self.log("order check success")
@@ -691,7 +705,9 @@ class QIFI_Account():
     def on_bar(self, bar):
         pass
 
-    def on_price_change(self, code, price):
+    def on_price_change(self, code, price, datetime=None):
+
+        
         if code in self.positions.keys():
             try:
                 pos = self.get_position(code)
@@ -703,6 +719,9 @@ class QIFI_Account():
             except Exception as e:
 
                 self.log(e)
+
+        if datetime:
+            self.datetime = datetime
 
     def order_schedule(self, code: str, amount: float, price: float, towards: int, order_id: str = ''):
         """
@@ -721,32 +740,42 @@ class QIFI_Account():
 
 
 if __name__ == "__main__":
-    acc = QIFI_Account("x1", "x1")
-    acc.initial()
+    # acc = QIFI_Account("x1", "x1")
+    # acc.initial()
 
-    acc.log(acc.message)
+    # acc.log(acc.message)
 
-    r = acc.send_order('RB2001', 10, 5000, ORDER_DIRECTION.BUY_OPEN)
-    acc.log(r)
+    # r = acc.send_order('RB2001', 10, 5000, ORDER_DIRECTION.BUY_OPEN)
+    # acc.log(r)
 
-    acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
-                     acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
+    # acc.receive_deal(r['instrument_id'], 4500, r['volume'], r['towards'],
+    #                  acc.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
 
-    acc.log(acc.message)
+    # acc.log(acc.message)
 
-    acc.sync()
+    # acc.sync()
+
+    # this is a stock account
 
     acc2 = QIFI_Account("x1", "x1")
+    print('test for initial')
     acc2.initial()
 
-    acc.log(acc2.message)
+    acc2.log(acc2.message)
+
+    print('test for buy order')
 
     r = acc2.send_order('000001', 10, 12, ORDER_DIRECTION.BUY)
-    acc.log(r)
+    acc2.log(r)
+
+    print('test for receivedeal')
 
     acc2.receive_deal(r['instrument_id'], 11.8, r['volume'], r['towards'],
                       acc2.dtstr, order_id=r['order_id'], trade_id=str(uuid.uuid4()))
 
-    acc.log(acc2.message)
+    acc2.log(acc2.message)
 
+    print('test for sync')
     acc2.sync()
+
+    print('test for settle')
