@@ -1,8 +1,8 @@
-# QIFI ACCOUNT TEST
+# QIFI系列教程/QIFIACCOUNT 账户篇: 001 创建篇
 
 <!-- TOC -->
 
-- [QIFI ACCOUNT TEST](#qifi-account-test)
+- [QIFI系列教程/QIFIACCOUNT 账户篇: 001 创建篇](#qifi%E7%B3%BB%E5%88%97%E6%95%99%E7%A8%8Bqifiaccount-%E8%B4%A6%E6%88%B7%E7%AF%87-001-%E5%88%9B%E5%BB%BA%E7%AF%87)
     - [创建一个新的账户](#%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E6%96%B0%E7%9A%84%E8%B4%A6%E6%88%B7)
     - [创建完账户后的一些基础查询/准备](#%E5%88%9B%E5%BB%BA%E5%AE%8C%E8%B4%A6%E6%88%B7%E5%90%8E%E7%9A%84%E4%B8%80%E4%BA%9B%E5%9F%BA%E7%A1%80%E6%9F%A5%E8%AF%A2%E5%87%86%E5%A4%87)
         - [查询持仓](#%E6%9F%A5%E8%AF%A2%E6%8C%81%E4%BB%93)
@@ -217,6 +217,8 @@ myacc.dtstr
 ## 下单动作
 
 ### 发送订单
+
+在我们创建完账户后, 我们显然最需要的功能就是下单动作, 下单函数可能会有很多形式(buy/buy_open/sell/sell_open)等, 但是最底层的数据一定是 send_order 函数, 我们先来讲解一下 send_order
 ```python
   
 r = myacc.send_order('000001', 10, 12, ORDER_DIRECTION.BUY)

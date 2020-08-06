@@ -507,7 +507,7 @@ class QIFI_Account():
 
         return res
 
-    def send_order(self, code: str, amount: float, price: float, towards: int, order_id: str = ''):
+    def send_order(self, code: str, amount: float, price: float, towards: int, order_id: str = '', datetime: str = ''):
         order_id = str(uuid.uuid4()) if order_id == '' else order_id
         if self.order_check(code, amount, price, towards, order_id):
             self.log("order check success")
