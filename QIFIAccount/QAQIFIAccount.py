@@ -307,6 +307,10 @@ class QIFI_Account():
     def create_backtestaccount(self):
         """
         生成一个回测的账户
+
+        回测账户的核心事件轴是数据的datetime, 基于数据的datetime来进行账户的更新
+
+
         """
         self.trading_day = ""
         self.pre_balance = self.init_cash
@@ -332,6 +336,7 @@ class QIFI_Account():
             "fetch_amount": 0.0,
             "qry_count": 0
         }
+
         # self.ask_deposit(self.init_cash)
 
 
@@ -468,6 +473,15 @@ class QIFI_Account():
         return self.static_balance + self.deposit - self.withdraw + self.float_profit + self.close_profit
 
     def order_check(self, code: str, amount: int, price: float, towards: int, order_id: str) -> bool:
+        """
+        order_check是账户自身的逻辑, 你可以重写这个代码
+
+        Attention: 需要注意的是 如果你修改了此部分代码 请注意如果你做了对于账户的资金的预操作请在结束的时候恢复
+        
+        :::如: 下单失败-> 请恢复账户的资金和仓位
+
+        --> return  Bool
+        """
         res = False
         qapos = self.get_position(code)
 
@@ -492,7 +506,7 @@ class QIFI_Account():
                 res = True
             else:
                 self.log("BUYCLOSETODAY 今日仓位不足")
-        elif towards in [ORDER_DIRECTION.SELL_CLOSE, ORDER_DIRECTION.SELL]:
+        elif towards in [ORDER_DIRECTION.SELL_CLOSE]:
             # self.log("sellclose")
             # self.log(self.volume_long - self.volume_long_frozen)
             # self.log(amount)
@@ -502,6 +516,16 @@ class QIFI_Account():
                 res = True
             else:
                 self.log("SELL CLOSE 仓位不足")
+
+        elif towards in [ORDER_DIRECTION.SELL]:
+            # self.log("sellclose")
+            # self.log(self.volume_long - self.volume_long_frozen)
+            # self.log(amount)
+            if (qapos.volume_long - qapos.volume_long_frozen) >= amount:
+                res = True
+            else:
+                self.log("SELL CLOSE 仓位不足")
+
 
         elif towards == ORDER_DIRECTION.SELL_CLOSETODAY:
             if (qapos.volume_long_today - qapos.volume_short_frozen_today) >= amount:
