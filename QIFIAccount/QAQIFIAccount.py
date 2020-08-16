@@ -494,7 +494,7 @@ class QIFI_Account():
             if (qapos.volume_short - qapos.volume_short_frozen) >= amount:
                 # check
                 qapos.volume_short_frozen_today += amount
-                qapos.volume_short_today -= amount
+                #qapos.volume_short_today -= amount
                 res = True
             else:
                 self.log("BUYCLOSE 仓位不足")
@@ -502,42 +502,31 @@ class QIFI_Account():
         elif towards == ORDER_DIRECTION.BUY_CLOSETODAY:
             if (qapos.volume_short_today - qapos.volume_short_frozen_today) >= amount:
                 qapos.volume_short_frozen_today += amount
-                qapos.volume_short_today -= amount
+                #qapos.volume_short_today -= amount
                 res = True
             else:
                 self.log("BUYCLOSETODAY 今日仓位不足")
-        elif towards in [ORDER_DIRECTION.SELL_CLOSE]:
+        elif towards in [ORDER_DIRECTION.SELL_CLOSE, ORDER_DIRECTION.SELL]:
             # self.log("sellclose")
             # self.log(self.volume_long - self.volume_long_frozen)
             # self.log(amount)
             if (qapos.volume_long - qapos.volume_long_frozen) >= amount:
                 qapos.volume_long_frozen_today += amount
-                qapos.volume_long_today -= amount
+                #qapos.volume_long_today -= amount
                 res = True
             else:
                 self.log("SELL CLOSE 仓位不足")
-
-        elif towards in [ORDER_DIRECTION.SELL]:
-            # self.log("sellclose")
-            # self.log(self.volume_long - self.volume_long_frozen)
-            # self.log(amount)
-            if (qapos.volume_long - qapos.volume_long_frozen) >= amount:
-                res = True
-            else:
-                self.log("SELL CLOSE 仓位不足")
-
 
         elif towards == ORDER_DIRECTION.SELL_CLOSETODAY:
-            if (qapos.volume_long_today - qapos.volume_short_frozen_today) >= amount:
+            if (qapos.volume_long_today - qapos.volume_long_frozen_today) >= amount:
                 # self.log("sellclosetoday")
                 # self.log(self.volume_long_today - self.volume_long_frozen)
                 # self.log(amount)
                 qapos.volume_long_frozen_today += amount
-                qapos.volume_long_today -= amount
+                #qapos.volume_long_today -= amount
                 return True
             else:
                 self.log("SELLCLOSETODAY 今日仓位不足")
-
         elif towards in [ORDER_DIRECTION.BUY_OPEN,
                          ORDER_DIRECTION.SELL_OPEN,
                          ORDER_DIRECTION.BUY]:
