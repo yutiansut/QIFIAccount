@@ -37,7 +37,7 @@ except:
 """
 """
 
-VERSION = '1.12.0'
+VERSION = '1.12.1'
 AUTHOR = 'yutiansut'
 
 
