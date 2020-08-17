@@ -657,7 +657,7 @@ class QIFI_Account():
 
             elif trade_amount < vl:
                 frozen['amount'] = vl - trade_amount
-                release_money = trade_amount * frozen['coeff']
+                release_money = trade_amount * frozen.get('coeff', 1)
                 self.money += release_money
 
                 frozen['money'] -= release_money
