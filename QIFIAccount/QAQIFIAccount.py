@@ -38,14 +38,16 @@ def parse_orderdirection(od):
     direction = ''
     offset = ''
 
-    if od in [1, 2, 3]:
+    if od in [1, 2, 3, 4]:
         direction = 'BUY'
-    elif od in [-1, -2, -3]:
+    elif od in [-1, -2, -3, -4]:
         direction = 'SELL'
-    if abs(od) == 2:
+    if abs(od) == 2 or od == 1:
         offset = 'OPEN'
-    elif abs(od) == 3:
+    elif abs(od) == 3 or od == -1:
         offset = 'CLOSE'
+    elif abs(od) == 4:
+        offset = 'CLOSETODAY'
 
     return direction, offset
 
