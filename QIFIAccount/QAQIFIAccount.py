@@ -215,7 +215,8 @@ class QIFI_Account():
 
     def settle(self):
         self.log('settle')
-        self.db.history.insert_one(self.message)
+        self.db.history.update_one({'account_cookie': self.user_id, 'trading_day': self.trading_day}, {
+                '$set': self.message}, upsert=True)
         self.pre_balance += (self.deposit - self.withdraw + self.close_profit)
         self.static_balance = self.pre_balance
 
