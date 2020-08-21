@@ -188,7 +188,7 @@ class QIFI_Account():
 
                 self.on_reload()
 
-                if message.get('_trading_day', '') == str(self._trading_day):
+                if message.get('trading_day', '') == str(self._trading_day):
                     # reload
                     pass
 
@@ -396,7 +396,7 @@ class QIFI_Account():
             "updatetime": str(self.last_updatetime),
             "wsuri": self.wsuri,
             "bankname": self.bankname,
-            "_trading_day": str(self._trading_day),
+            "trading_day": str(self.trading_day),
             "status": self.status,
             "accounts": self.account_msg,
             "trades": self.trades,
