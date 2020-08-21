@@ -95,7 +95,7 @@ class QIFI_Account():
         self.trade_host = ""
         self.last_updatetime = ""
         self.status = 200
-        self.trading_day = ""
+        self._trading_day = ""
         self.init_cash = init_cash
         self.pre_balance = 0
         self.datetime = ""
@@ -132,7 +132,12 @@ class QIFI_Account():
 
         self.sync()
 
-    
+    @property
+    def trading_day(self):
+        if self.model == "BACKTEST":
+            return str(self.datetime)[0:10]
+        else:
+            return self._trading_day
 
     def reload(self):
         if self.model.upper() in ['REAL', 'SIM']:
@@ -143,12 +148,12 @@ class QIFI_Account():
             # resume/settle
 
             if time.hour <= 15:
-                self.trading_day = time.date()
+                self._trading_day = time.date()
             else:
                 if time.weekday() in [0, 1, 2, 3]:
-                    self.trading_day = time.date() + datetime.timedelta(days=1)
+                    self._trading_day = time.date() + datetime.timedelta(days=1)
                 elif time.weekday() in [4, 5, 6]:
-                    self.trading_day = time.date() + datetime.timedelta(days=(7-time.weekday()))
+                    self._trading_day = time.date() + datetime.timedelta(days=(7-time.weekday()))
             if message is not None:
                 accpart = message.get('accounts')
 
@@ -183,7 +188,7 @@ class QIFI_Account():
 
                 self.on_reload()
 
-                if message.get('trading_day', '') == str(self.trading_day):
+                if message.get('_trading_day', '') == str(self._trading_day):
                     # reload
                     pass
 
@@ -284,7 +289,7 @@ class QIFI_Account():
                 self.withdrawQuota, money)
 
     def create_simaccount(self):
-        self.trading_day = str(datetime.date.today())
+        self._trading_day = str(datetime.date.today())
         self.wsuri = "ws://www.yutiansut.com:7988"
         self.pre_balance = 0
         self.static_balance = 0
@@ -320,7 +325,7 @@ class QIFI_Account():
 
 
         """
-        self.trading_day = ""
+        self._trading_day = ""
         self.pre_balance = self.init_cash
         self.static_balance = self.init_cash
         self.deposit = 0  # 入金
@@ -390,7 +395,7 @@ class QIFI_Account():
             "updatetime": str(self.last_updatetime),
             "wsuri": self.wsuri,
             "bankname": self.bankname,
-            "trading_day": str(self.trading_day),
+            "_trading_day": str(self._trading_day),
             "status": self.status,
             "accounts": self.account_msg,
             "trades": self.trades,
