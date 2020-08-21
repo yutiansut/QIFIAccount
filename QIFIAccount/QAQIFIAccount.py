@@ -196,11 +196,17 @@ class QIFI_Account():
 
     def sync(self):
         self.on_sync()
-        self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
+        if self.model == "BACKTEST":
+            ## 数据库: quantaxis.history
+            self.db.history.update({'account_cookie': self.user_id, 'password': self.password}, {
             '$set': self.message}, upsert=True)
-            
-        self.db.hisaccount.insert_one(
-            {'updatetime': self.dtstr, 'account_cookie': self.user_id, 'accounts': self.account_msg})
+        else:
+            ## 数据库: QAREALTIME.account
+            self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
+                '$set': self.message}, upsert=True)
+                
+            self.db.hisaccount.insert_one(
+                {'updatetime': self.dtstr, 'account_cookie': self.user_id, 'accounts': self.account_msg})
 
     def settle(self):
         self.log('settle')
