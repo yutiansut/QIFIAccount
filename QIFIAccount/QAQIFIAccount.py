@@ -203,7 +203,7 @@ class QIFI_Account():
         self.on_sync()
         if self.model == "BACKTEST":
             ## 数据库: quantaxis.history
-            self.db.history.update({'account_cookie': self.user_id, 'password': self.password}, {
+            self.db.history.update({'account_cookie': self.user_id, 'trading_day': self.trading_day}, {
             '$set': self.message}, upsert=True)
         else:
             ## 数据库: QAREALTIME.account
