@@ -34,8 +34,9 @@ def qasimStock(user, password, eventmq_ip, eventmq_port, trade_host):
 @click.option('--code', default='000001')
 @click.option('--price', default=20.0)
 @click.option('--amount', default=100)
-@click.option('--towards', default='BUY')
-def qasimstock_sendorder(user, eventmq_ip, eventmq_port, code, price, amount, towards):
+@click.option('--direction', default='BUY')
+@click.option('--offset', default='OPEN')
+def qasimstock_sendorder(user, eventmq_ip, eventmq_port, code, price, amount, direction, offset):
     p = producer.publisher_routing(
         user='admin', password='admin', host=eventmq_ip, port=eventmq_port, exchange='QAORDER_ROUTER')
 
@@ -45,8 +46,8 @@ def qasimstock_sendorder(user, eventmq_ip, eventmq_port, code, price, amount, to
         'strategy_id': 'test',
         'code': code,
         'price': price,
-        'order_direction': towards,
-        'order_offset': 'OPEN',
+        'order_direction': direction,
+        'order_offset': offset,
         'volume': amount,
         'order_time': str(datetime.datetime.now()),
         'exchange_id': 'test'

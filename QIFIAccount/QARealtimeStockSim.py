@@ -17,6 +17,8 @@ class QIFI_StockSIM_Account(QIFI_Account):
                  eventmq_ip=eventmq_ip, eventmq_port=eventmq_port):
         super().__init__(username, password, model, broker_name, trade_host, init_cash)
 
+
+
         self.pub = producer.publisher_routing(
             exchange='qamdgateway', host=eventmq_ip, port=eventmq_port, durable=True)
         self.subrealtime = subscriber_topic(
@@ -47,10 +49,15 @@ class QIFI_StockSIM_Account(QIFI_Account):
 
     def listen_order_callback(self, a, b, c, data):
         data = json.loads(data)
-        if data['order_direction'] == 'BUY':
-            towards = 1
-        else:
-            towards = -1
+        if data['order_direction'] == 'BUY' and data['order_offset'] == 'OPEN':
+            towards = 2
+        elif data['order_direction'] == 'SELL' and data['order_offset'] == 'OPEN':
+            towards = -2
+        elif data['order_direction'] == 'SELL' and data['order_offset'] == 'CLOSE':
+            towards = -3
+        elif data['order_direction'] == 'BUY' and data['order_offset'] == 'CLOSE':
+            towards = 3
+        
         r = self.send_order(data['code'], data['volume'],
                             float(data['price']), towards)
 

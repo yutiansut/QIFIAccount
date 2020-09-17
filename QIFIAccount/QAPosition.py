@@ -109,6 +109,7 @@ class QA_Position():
 
                  spms_id=None,
                  oms_id=None,
+
                  *args,
                  **kwargs
 
@@ -179,6 +180,7 @@ class QA_Position():
         self.frozen = {} if frozen is None else frozen
         self.spms_id = spms_id
         self.oms_id = oms_id
+
         if auto_reload:
             self.reload()
         self.allow_exceed = allow_exceed
@@ -259,10 +261,10 @@ class QA_Position():
 
     @property
     def volume_long(self):
-        return self.volume_long_today + self.volume_long_his + self.volume_long_frozen
+        return self.volume_long_today + self.volume_long_his - self.volume_long_frozen
     @property
     def volume_short(self):
-        return self.volume_short_his + self.volume_short_today+ self.volume_short_frozen
+        return self.volume_short_his + self.volume_short_today - self.volume_short_frozen
 
     @property
     def volume_long_frozen(self):
@@ -548,7 +550,7 @@ class QA_Position():
         elif towards == ORDER_DIRECTION.SELL:
             # 股票卖出模式:
             # 今日买入仓位不能卖出
-            if self.volume_long_his >= amount:
+            if self.volume_long_his >= amount and self.volume_long>=amount:
                 
                 self.position_cost_long = self.position_cost_long * \
                     (self.volume_long - amount)/self.volume_long
@@ -664,10 +666,15 @@ class QA_Position():
 
         elif towards == ORDER_DIRECTION.BUY_CLOSE:
             # 有昨仓先平昨仓
-            self.position_cost_short = self.position_cost_short * \
-                (self.volume_short-amount)/self.volume_short
-            self.open_cost_short = self.open_cost_short * \
-                (self.volume_short-amount)/self.volume_short
+
+            if self.volume_short>0:
+                self.position_cost_short = self.position_cost_short * \
+                    (self.volume_short-amount)/self.volume_short
+                self.open_cost_short = self.open_cost_short * \
+                    (self.volume_short-amount)/self.volume_short
+            else:
+                self.position_cost_short = 0
+                self.open_cost_short =0
             # if self.volume_short_his >= amount:
             #     self.volume_short_his -= amount
             # else:
@@ -686,10 +693,14 @@ class QA_Position():
         elif towards == ORDER_DIRECTION.SELL_CLOSE:
             # 有昨仓先平昨仓
             print(self.curpos)
-            self.position_cost_long = self.position_cost_long * \
-                (self.volume_long - amount)/self.volume_long
-            self.open_cost_long = self.open_cost_long * \
-                (self.volume_long-amount)/self.volume_long
+            if self.volume_long>0:
+                self.position_cost_long = self.position_cost_long * \
+                    (self.volume_long - amount)/self.volume_long
+                self.open_cost_long = self.open_cost_long * \
+                    (self.volume_long-amount)/self.volume_long
+            else:
+                self.position_cost_long = 0
+                self.open_cost_long =0
             # if self.volume_long_his >= amount:
             #     self.volume_long_his -= amount
             # else:
