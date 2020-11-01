@@ -57,9 +57,9 @@ class QIFI_StockSIM_Account(QIFI_Account):
             towards = -3
         elif data['order_direction'] == 'BUY' and data['order_offset'] == 'CLOSE':
             towards = 3
-        
+        order_id = data.get('order_id', str(uuid.uuid4()))
         r = self.send_order(data['code'], data['volume'],
-                            float(data['price']), towards)
+                            float(data['price']), towards, order_id)
 
         self.receive_deal(r['instrument_id'], r['price'], r['volume'], r['towards'], str(
             datetime.datetime.now()), order_id=r['order_id'], trade_id=str(uuid.uuid4()))
