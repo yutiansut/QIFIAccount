@@ -143,7 +143,7 @@ class QA_Position():
 
             self.market_type = MARKET_TYPE.FUTURE_CN if re.search(
                 r'[a-zA-z]+', self.code) else MARKET_TYPE.STOCK_CN
-        self.exchange_id = exchange_id
+        self.exchange_id = self.market_preset['exchange'] if  exchange_id==None else exchange_id
 
         self.volume_long_his = volume_long_his
         self.volume_long_today = volume_long_today

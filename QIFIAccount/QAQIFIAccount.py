@@ -175,7 +175,11 @@ class QIFI_Account():
 
                 positions = message.get('positions')
                 for position in positions.values():
-                    self.positions[position.get('instrument_id')] = QA_Position(
+                    p = QA_Position(
+                    ).loadfrommessage(position)
+
+
+                    self.positions[position.get('exchange_id')+'.'+position.get('instrument_id')] = QA_Position(
                     ).loadfrommessage(position)
 
                 for order in self.open_orders:
@@ -358,7 +362,7 @@ class QIFI_Account():
     def add_position(self, position):
 
         if position.instrument_id not in self.positions.keys():
-            self.positions[position.instrument_id] = position
+            self.positions[position.exchange_id + '.'+position.instrument_id] = position
             return 0
         else:
             return 1
@@ -622,7 +626,7 @@ class QIFI_Account():
         od['volume_left'] = 0
 
         if od['offset'] in ['CLOSE', 'CLOSETODAY']:
-            pos = self.positions[od['instrument_id']]
+            pos = self.positions[od['exchange_id'] + '.'+ od['instrument_id']]
             if od['direction'] == 'BUY':
                 pos.volume_short_frozen_today += od['volume_left']
             else:
@@ -717,12 +721,15 @@ class QIFI_Account():
             self.sync()
 
     def get_position(self, code: str = None) -> QA_Position:
+
+
         if code is None:
             return list(self.positions.values())[0]
         else:
             if code not in self.positions.keys():
-                self.positions[code] = QA_Position(code=code)
-            return self.positions[code]
+                pos = QA_Position(code=code)
+                self.positions[pos.exchange_id+ '.'+ code] = pos
+            return self.positions[pos.exchange_id+ '.'+ code]
 
     def query_trade(self):
         pass
@@ -738,7 +745,7 @@ class QIFI_Account():
         
         if code in self.positions.keys():
             try:
-                pos = self.get_position(code)
+                pos = self.get_position(code.split('.')[1])
                 if pos.last_price == price:
                     pass
                 else:
