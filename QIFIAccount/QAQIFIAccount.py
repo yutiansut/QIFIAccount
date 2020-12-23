@@ -730,7 +730,7 @@ class QIFI_Account():
                 pos = QA_Position(code=code)
                 self.positions[pos.exchange_id+ '.'+ code] = pos
 
-                return self.positions[exchange_id+ '.'+ code]
+                return self.positions[pos.exchange_id+ '.'+ code]
             else:
                 return self.positions[code]
 
