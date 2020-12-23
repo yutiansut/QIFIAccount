@@ -721,18 +721,18 @@ class QIFI_Account():
             self.sync()
 
     def get_position(self, code: str = None) -> QA_Position:
-
+        
         #exchange_id =  self.market_preset.get_exchange(code)
         if code is None:
             return list(self.positions.values())[0]
         else:
+            code = self.format_code(code)
             if code not in self.positions.keys():
                 pos = QA_Position(code=code)
-                self.positions[pos.exchange_id+ '.'+ code] = pos
+                self.positions[code] = pos
 
-                return self.positions[pos.exchange_id+ '.'+ code]
-            else:
-                return self.positions[code]
+            return self.positions[code]
+
 
     def query_trade(self):
         pass
@@ -759,6 +759,7 @@ class QIFI_Account():
                     pass
                 else:
                     pos.last_price = price
+
                     self.sync()
             except Exception as e:
 
