@@ -747,7 +747,7 @@ class QIFI_Account():
         if '.' in code :
             return code
         else:
-            return self.market_preset.get_exchange('code') + '.' + code
+            return self.market_preset.get_exchange(code) + '.' + code
 
     def on_price_change(self, code, price, datetime=None):
         code = self.format_code(code)

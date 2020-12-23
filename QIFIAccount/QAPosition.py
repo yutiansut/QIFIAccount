@@ -114,13 +114,15 @@ class QA_Position():
                  **kwargs
 
                  ):
+        if '.' in code:
+            self.code = code.split('.')[1]
 
-        self.code = code
+        self.market_preset =MARKET_PRESET().get_code(self.code) 
+        
         self.account_cookie = account_cookie
         self.portfolio_cookie = portfolio_cookie
         self.username = username
         self.time = ''
-        self.market_preset = MARKET_PRESET().get_code(self.code)
         self.position_id = str(
             uuid.uuid4()) if position_id is None else position_id
         self.moneypreset = moneypreset
