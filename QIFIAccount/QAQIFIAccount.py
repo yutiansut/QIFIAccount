@@ -122,7 +122,7 @@ class QIFI_Account():
         self.positions = {}
         self.trades = {}
         self.orders = {}
-
+        self.market_preset =  MARKET_PRESET()
     def initial(self):
 
         self.reload()
@@ -722,14 +722,15 @@ class QIFI_Account():
 
     def get_position(self, code: str = None) -> QA_Position:
 
-
+        exchange_id =  self.market_preset.get_exchange(code)
         if code is None:
             return list(self.positions.values())[0]
         else:
             if code not in self.positions.keys():
                 pos = QA_Position(code=code)
                 self.positions[pos.exchange_id+ '.'+ code] = pos
-            return self.positions[pos.exchange_id+ '.'+ code]
+
+            return self.positions[exchange_id+ '.'+ code]
 
     def query_trade(self):
         pass

@@ -12,7 +12,7 @@ from QUANTAXIS.QAUtil.QAParameter import (
 )
 from QUANTAXIS.QASU.save_position import save_position
 from QUANTAXIS.QAUtil.QASetting import DATABASE
-
+from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
 
 class QA_Position():
     '''一个持仓模型:/兼容股票期货/兼容保证金持仓
