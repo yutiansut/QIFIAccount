@@ -743,9 +743,15 @@ class QIFI_Account():
     def on_bar(self, bar):
         pass
 
-    def on_price_change(self, code, price, datetime=None):
+    def format_code(self, code):
+        if '.' in code :
+            return code
+        else:
+            return self.market_preset.get_exchange('code') + '.' + code
 
-        
+    def on_price_change(self, code, price, datetime=None):
+        code = self.format_code(code)
+
         if code in self.positions.keys():
             try:
                 pos = self.get_position(code.split('.')[1])
