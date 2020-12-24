@@ -28,10 +28,9 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Lint with flake8
+    - name: install qifiaccount package
       run: |
         pip install -e .
-        python setup.py bdist_wheel
     - name: Test with pytest
       run: |
         pytest --disable-warnings
