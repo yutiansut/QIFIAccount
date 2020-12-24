@@ -82,7 +82,7 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
     ],
-    install_requires=['quantaxis', 'qaenv', 'click', 'quantaxis_pubsub', 'traceback', 'pytest'],
+    install_requires=['quantaxis', 'qaenv', 'click', 'quantaxis_pubsub', 'pytest'],
     # install_requires=requirements,
     entry_points={
         'console_scripts': [
