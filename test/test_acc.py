@@ -184,6 +184,6 @@ def test_acc():
     assert(myacc.orders == {})
     assert(myacc.trades == {})
     assert(myacc.balance == 10001300.0)
-    assert(myacc.frozen == 0.0)
+    assert(myacc.frozen == {})
     print('未close的order 不计入prebalance')
     assert(myacc.pre_balance == 10000000.0)
