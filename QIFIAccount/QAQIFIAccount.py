@@ -1,6 +1,6 @@
 import datetime
 import uuid
-
+import traceback
 import pymongo
 from qaenv import mongo_ip
 
@@ -54,7 +54,7 @@ def parse_orderdirection(od):
 
 class QIFI_Account():
 
-    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000, taskid=str(uuid.uuid4()),):
+    def __init__(self, username, password, model="SIM", broker_name="QAPaperTrading", trade_host=mongo_ip, init_cash=1000000, taskid=str(uuid.uuid4()), nodatabase=False):
         """Initial
         QIFI Account是一个基于 DIFF/ QIFI/ QAAccount后的一个实盘适用的Account基类
 
@@ -65,7 +65,7 @@ class QIFI_Account():
         使用 model = SIM/ REAL来切换
 
         qifiaccount 不去区分你的持仓是股票还是期货, 因此你可以实现跨市场的交易持仓管理
-
+        nodatabase 离线模式
         """
         self.user_id = username
         self.username = username
@@ -122,7 +122,9 @@ class QIFI_Account():
         self.positions = {}
         self.trades = {}
         self.orders = {}
-        self.market_preset =  MARKET_PRESET()
+        self.market_preset = MARKET_PRESET()
+        self.nodatabase = nodatabase
+
     def initial(self):
 
         self.reload()
@@ -178,7 +180,6 @@ class QIFI_Account():
                     p = QA_Position(
                     ).loadfrommessage(position)
 
-
                     self.positions[position.get('exchange_id')+'.'+position.get('instrument_id')] = QA_Position(
                     ).loadfrommessage(position)
 
@@ -206,22 +207,30 @@ class QIFI_Account():
 
     def sync(self):
         self.on_sync()
-        if self.model == "BACKTEST":
-            ## 数据库: quantaxis.history
-            self.db.history.update({'account_cookie': self.user_id, 'trading_day': self.trading_day}, {
-            '$set': self.message}, upsert=True)
-        else:
-            ## 数据库: QAREALTIME.account
-            self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
-                '$set': self.message}, upsert=True)
-                
-            self.db.hisaccount.insert_one(
-                {'updatetime': self.dtstr, 'account_cookie': self.user_id, 'accounts': self.account_msg})
+        try:
+            if not self.nodatabase:
+                if self.model == "BACKTEST":
+                    ## 数据库: quantaxis.history
+                    self.db.history.update({'account_cookie': self.user_id, 'trading_day': self.trading_day}, {
+                        '$set': self.message}, upsert=True)
+                else:
+                    ## 数据库: QAREALTIME.account
+                    self.db.account.update({'account_cookie': self.user_id, 'password': self.password}, {
+                        '$set': self.message}, upsert=True)
+
+                    self.db.hisaccount.insert_one(
+                        {'updatetime': self.dtstr, 'account_cookie': self.user_id, 'accounts': self.account_msg})
+            else:
+                print('pretend to save to database {}/{}'.format(self.user_id, self.trading_day))
+                print(self.message)
+                return self.message
+        except:
+            traceback.print_exc()
 
     def settle(self):
         self.log('settle')
-        self.db.history.update_one({'account_cookie': self.user_id, 'trading_day': self.trading_day}, {
-                '$set': self.message}, upsert=True)
+        self.sync()
+
         self.pre_balance += (self.deposit - self.withdraw + self.close_profit)
         self.static_balance = self.pre_balance
 
@@ -322,7 +331,6 @@ class QIFI_Account():
         }
         self.ask_deposit(self.init_cash)
 
-
     def create_backtestaccount(self):
         """
         生成一个回测的账户
@@ -358,11 +366,11 @@ class QIFI_Account():
 
         # self.ask_deposit(self.init_cash)
 
-
     def add_position(self, position):
 
         if position.instrument_id not in self.positions.keys():
-            self.positions[position.exchange_id + '.'+position.instrument_id] = position
+            self.positions[position.exchange_id +
+                           '.'+position.instrument_id] = position
             return 0
         else:
             return 1
@@ -496,7 +504,7 @@ class QIFI_Account():
         order_check是账户自身的逻辑, 你可以重写这个代码
 
         Attention: 需要注意的是 如果你修改了此部分代码 请注意如果你做了对于账户的资金的预操作请在结束的时候恢复
-        
+
         :::如: 下单失败-> 请恢复账户的资金和仓位
 
         --> return  Bool
@@ -605,7 +613,8 @@ class QIFI_Account():
             }
             self.orders[order_id] = order
             self.log('下单成功 {}'.format(order_id))
-            self.sync()
+            if self.model != 'BACKTEST':
+                self.sync()
             self.on_ordersend(order)
             return order
         else:
@@ -626,7 +635,7 @@ class QIFI_Account():
         od['volume_left'] = 0
 
         if od['offset'] in ['CLOSE', 'CLOSETODAY']:
-            pos = self.positions[od['exchange_id'] + '.'+ od['instrument_id']]
+            pos = self.positions[od['exchange_id'] + '.' + od['instrument_id']]
             if od['direction'] == 'BUY':
                 pos.volume_short_frozen_today += od['volume_left']
             else:
@@ -717,11 +726,11 @@ class QIFI_Account():
 
             self.money -= (margin - close_profit)
             self.close_profit += close_profit
-
-            self.sync()
+            if self.model != "BACKTEST":
+                self.sync()
 
     def get_position(self, code: str = None) -> QA_Position:
-        
+
         #exchange_id =  self.market_preset.get_exchange(code)
         if code is None:
             return list(self.positions.values())[0]
@@ -733,7 +742,6 @@ class QIFI_Account():
 
             return self.positions[code]
 
-
     def query_trade(self):
         pass
 
@@ -744,7 +752,7 @@ class QIFI_Account():
         pass
 
     def format_code(self, code):
-        if '.' in code :
+        if '.' in code:
             return code
         else:
             return self.market_preset.get_exchange(code) + '.' + code
@@ -760,6 +768,7 @@ class QIFI_Account():
                 else:
                     pos.last_price = price
 
+                if self.model != 'BACKTEST':
                     self.sync()
             except Exception as e:
 
