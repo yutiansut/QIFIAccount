@@ -12,7 +12,7 @@ from QUANTAXIS.QAUtil.QAParameter import (
 )
 from QUANTAXIS.QASU.save_position import save_position
 from QUANTAXIS.QAUtil.QASetting import DATABASE
-
+from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
 
 class QA_Position():
     '''一个持仓模型:/兼容股票期货/兼容保证金持仓
@@ -114,13 +114,15 @@ class QA_Position():
                  **kwargs
 
                  ):
+        if '.' in code:
+            self.code = code.split('.')[1]
 
-        self.code = code
+        self.market_preset =MARKET_PRESET().get_code(self.code) 
+        
         self.account_cookie = account_cookie
         self.portfolio_cookie = portfolio_cookie
         self.username = username
         self.time = ''
-        self.market_preset = MARKET_PRESET().get_code(self.code)
         self.position_id = str(
             uuid.uuid4()) if position_id is None else position_id
         self.moneypreset = moneypreset
@@ -143,7 +145,7 @@ class QA_Position():
 
             self.market_type = MARKET_TYPE.FUTURE_CN if re.search(
                 r'[a-zA-z]+', self.code) else MARKET_TYPE.STOCK_CN
-        self.exchange_id = exchange_id
+        self.exchange_id = self.market_preset['exchange'] if  exchange_id==None else exchange_id
 
         self.volume_long_his = volume_long_his
         self.volume_long_today = volume_long_today

@@ -234,8 +234,6 @@ r = myacc.send_order('000001', 10, 12, ORDER_DIRECTION.BUY)
 
 ```python
 myacc.orders
-```
-
 
 
 
@@ -261,6 +259,8 @@ myacc.orders
       'status': 'ALIVE',
       'volume_left': 10,
       'last_msg': '已报'}}
+```
+
 
 
 
