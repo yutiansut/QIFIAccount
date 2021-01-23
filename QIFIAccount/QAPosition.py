@@ -116,6 +116,8 @@ class QA_Position():
                  ):
         if '.' in code:
             self.code = code.split('.')[1]
+        else:
+            self.code = code
 
         self.market_preset =MARKET_PRESET().get_code(self.code) 
         
@@ -801,6 +803,8 @@ class QA_Position():
 
     def loadfrommessage(self, message):
         try:
+
+
           self.__init__(
               code = message.get('code', 'instrument_id'),
               account_cookie=message['account_cookie'],
