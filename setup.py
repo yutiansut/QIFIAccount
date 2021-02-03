@@ -37,7 +37,7 @@ except:
 """
 """
 
-VERSION = '1.12.14'
+VERSION = '1.13.3'
 AUTHOR = 'yutiansut'
 
 
@@ -82,7 +82,7 @@ setup(
         'Intended Audience :: Developers',
         'Operating System :: OS Independent',
     ],
-    install_requires=['quantaxis', 'qaenv', 'click', 'quantaxis_pubsub'],
+    install_requires=['quantaxis', 'qaenv', 'click', 'quantaxis_pubsub', 'pytest'],
     # install_requires=requirements,
     entry_points={
         'console_scripts': [
