@@ -552,20 +552,35 @@ class QA_Position():
         elif towards == ORDER_DIRECTION.SELL:
             # 股票卖出模式:
             # 今日买入仓位不能卖出
-            if self.volume_long_his >= amount and self.volume_long>=amount:
-                
-                self.position_cost_long = self.position_cost_long * \
-                    (self.volume_long - amount)/self.volume_long
-                self.open_cost_long = self.open_cost_long * \
-                    (self.volume_long-amount)/self.volume_long
+            if self.volume_long_his >= amount :
+                # volime_long --> count in sendorder model
+                #and self.volume_long>=amount:
+                if  self.volume_long>0:
+                    self.position_cost_long = self.position_cost_long * \
+                        (self.volume_long - amount)/self.volume_long
+                    self.open_cost_long = self.open_cost_long * \
+                        (self.volume_long-amount)/self.volume_long
 
-                self.volume_long_his -= amount
-                self.volume_long_frozen_today -= amount
-                
-                marginValue = -1*(self.position_price_long * amount)
-                self.margin_long += marginValue
-                profit = (price - self.position_price_long) * amount 
-                self.moneypresetLeft += (-marginValue + profit)
+                    self.volume_long_his -= amount
+                    self.volume_long_frozen_today -= amount
+                    
+                    marginValue = -1*(self.position_price_long * amount)
+                    self.margin_long += marginValue
+                    profit = (price - self.position_price_long) * amount 
+                    self.moneypresetLeft += (-marginValue + profit)
+                elif self.volume_long==0:
+                    ## all close out 
+                    self.open_cost_long =0 
+                    self.position_cost_long =0
+
+                    self.volume_long_his -= amount
+                    self.volume_long_frozen_today -= amount
+                    
+                    marginValue = -1*(self.position_price_long * amount)
+                    self.margin_long += marginValue
+                    profit = (price - self.position_price_long) * amount 
+                    self.moneypresetLeft += (-marginValue + profit)
+
             else:
                 return 0,0
 
