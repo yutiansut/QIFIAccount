@@ -3,7 +3,7 @@ import uuid
 import traceback
 import pymongo
 from qaenv import mongo_ip
-
+import bson
 from QIFIAccount.QAPosition import QA_Position
 from QUANTAXIS.QAARP.market_preset import MARKET_PRESET
 
@@ -466,9 +466,9 @@ class QIFI_Account():
         if isinstance(times, str):
             tradedt = datetime.datetime.strptime(times, '%Y-%m-%d %H:%M:%S') if len(
                 times) == 19 else datetime.datetime.strptime(times.replace('_', '.'), '%Y-%m-%d %H:%M:%S.%f')
-            return tradedt.timestamp()*1000000000
+            return bson.int64.Int64(tradedt.timestamp()*1000000000)
         elif isinstance(times, datetime.datetime):
-            return tradedt.timestamp()*1000000000
+            return bson.int64.Int64(tradedt.timestamp()*1000000000)
 
 
 # 惰性计算
