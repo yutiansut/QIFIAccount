@@ -272,7 +272,11 @@ class QIFI_Account():
 
     @property
     def dtstr(self):
-        return str(datetime.datetime.now()).replace('.', '_')
+        if self.model=="BACKTEST":
+            return self.datetime.replace('.', '_')
+        else:
+            return str(datetime.datetime.now()).replace('.', '_')
+
 
     def ask_deposit(self, money):
 
