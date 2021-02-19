@@ -20,9 +20,9 @@ acc.initial()
 
 
 # In[56]:
+acc.on_price_change('000001', 23.29, '2021-01-27 09:58:00')
 
-
-order = acc.send_order('000001', 100, 12, QIFIAccount.ORDER_DIRECTION.BUY, datetime='2020-01-01')
+order = acc.send_order('000001', 100, 23.08, QIFIAccount.ORDER_DIRECTION.BUY, datetime='2021-01-27 10:33:00')
 
 
 # In[57]:
@@ -40,7 +40,7 @@ pos = acc.get_position('000001')
 # In[59]:
 
 
-acc.on_price_change('000001', 12.3, '2020-01-01 11:22:00')
+acc.on_price_change('000001', 22.91, '2021-01-27 15:00:00')
 
 
 # In[60]:
@@ -88,7 +88,7 @@ print(pos.realtime_message)
 # In[67]:
 
 
-acc.on_price_change('000001', 12.3, '2020-01-02 09:32:00')
+acc.on_price_change('000001', 22.86, '2021-01-28 09:48:00')
 
 
 # In[68]:
@@ -100,7 +100,7 @@ pos.message
 # In[69]:
 
 
-order = acc.send_order('000001', 100, 12.3, QIFIAccount.ORDER_DIRECTION.SELL, datetime='2020-01-02')
+order = acc.send_order('000001', 100, 22.53, QIFIAccount.ORDER_DIRECTION.SELL, datetime='2021-01-28 11:29:00')
 
 
 # In[70]:
@@ -166,3 +166,4 @@ acc.positions
 # %%
 acc.message
 # %%
+acc.settle()
